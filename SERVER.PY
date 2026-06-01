@@ -1,13 +1,44 @@
 import json
 import os
 import mimetypes
+import base64
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+# Bancos de dados temporários
 fila_veiculos = []
 historico_veiculos = [] 
 
+# ========================================================
+# 🔒 CONFIGURAÇÃO DE ACESSO (USUÁRIO E SENHA)
+# ========================================================
+USUARIO = "estapar"
+SENHA = "123"
+# ========================================================
+
+# Prepara a chave de segurança
+CHAVE_AUTH = base64.b64encode(f"{USUARIO}:{SENHA}".encode('utf-8')).decode('utf-8')
+AUTH_ESPERADO = f"Basic {CHAVE_AUTH}"
+
 class ServidorFilaHandler(BaseHTTPRequestHandler):
+    
+    # Função que cria o cadeado na porta do servidor
+    def verificar_autenticacao(self):
+        auth_header = self.headers.get('Authorization')
+        if auth_header == AUTH_ESPERADO:
+            return True
+        else:
+            # Trava a requisição e pede a senha
+            self.send_response(401)
+            self.send_header('WWW-Authenticate', 'Basic realm="Acesso Restrito - Valet"')
+            self.end_headers()
+            self.wfile.write(b"Acesso Negado. Digite o usuario e senha corretos.")
+            return False
+
     def do_GET(self):
+        # Bate na porta: tem a senha? Se não tiver, bloqueia aqui mesmo!
+        if not self.verificar_autenticacao():
+            return
+
         global fila_veiculos, historico_veiculos
         diretorio_atual = os.path.dirname(os.path.abspath(__file__))
         
@@ -49,13 +80,16 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         self.wfile.write(b"404 - Nao encontrado")
 
     def do_POST(self):
+        # API também protegida por senha!
+        if not self.verificar_autenticacao():
+            return
+
         global fila_veiculos, historico_veiculos
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
         dados = json.loads(post_data.decode('utf-8'))
 
         if self.path == '/api/adicionar':
-            # Converte para string para garantir a checagem correta incluindo botões como 'PS'
             prisma_solicitado = str(dados["prisma"]).strip()
             
             for carro in fila_veiculos:
