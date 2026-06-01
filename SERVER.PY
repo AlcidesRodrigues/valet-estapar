@@ -15,45 +15,52 @@ USUARIO = "estapar"
 SENHA = "123"
 # ========================================================
 
-# Prepara a chave de segurança
 CHAVE_AUTH = base64.b64encode(f"{USUARIO}:{SENHA}".encode('utf-8')).decode('utf-8')
 AUTH_ESPERADO = f"Basic {CHAVE_AUTH}"
 
 class ServidorFilaHandler(BaseHTTPRequestHandler):
     
-    # Função que cria o cadeado na porta do servidor
     def verificar_autenticacao(self):
         auth_header = self.headers.get('Authorization')
         if auth_header == AUTH_ESPERADO:
             return True
         else:
-            # Trava a requisição e pede a senha
             self.send_response(401)
-            self.send_header('WWW-Authenticate', 'Basic realm="Acesso Restrito - Valet"')
+            self.send_header('WWW-Authenticate', 'Basic realm="Acesso Restrito"')
             self.end_headers()
-            self.wfile.write(b"Acesso Negado. Digite o usuario e senha corretos.")
+            self.wfile.write(b"Acesso Negado.")
             return False
 
     def do_GET(self):
-        # Bate na porta: tem a senha? Se não tiver, bloqueia aqui mesmo!
-        if not self.verificar_autenticacao():
-            return
-
         global fila_veiculos, historico_veiculos
         diretorio_atual = os.path.dirname(os.path.abspath(__file__))
         
-        if self.path == '/api/fila':
+        # ROTA PÚBLICA PARA O ROBÔ (Não precisa de senha)
+        if self.path == '/api/ping':
             self.send_response(200)
-            self.send_header('Content-type', 'application/json')
+            self.send_header('Content-type', 'text/plain')
             self.end_headers()
-            self.wfile.write(json.dumps(fila_veiculos).encode('utf-8'))
+            self.wfile.write(b"PONG")
             return
+
+        # CADEADO DE SEGURANÇA
+        if not self.verificar_autenticacao():
+            return
+        
+        # NOVA ROTA UNIFICADA DE DADOS COM CÁLCULO DE MÉDIA
+        if self.path == '/api/dados':
+            tempos = [c.get("tempo_espera_ms", 0) for c in historico_veiculos if "tempo_espera_ms" in c]
+            tempo_medio = sum(tempos) / len(tempos) if tempos else 600000 # 10 minutos em milissegundos padrão
             
-        elif self.path == '/api/historico':
+            resposta = {
+                "fila": fila_veiculos,
+                "historico": historico_veiculos,
+                "tempo_medio": tempo_medio
+            }
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps(historico_veiculos).encode('utf-8'))
+            self.wfile.write(json.dumps(resposta).encode('utf-8'))
             return
 
         caminho_relativo = self.path.lstrip('/')
@@ -80,7 +87,6 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         self.wfile.write(b"404 - Nao encontrado")
 
     def do_POST(self):
-        # API também protegida por senha!
         if not self.verificar_autenticacao():
             return
 
@@ -90,10 +96,10 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         dados = json.loads(post_data.decode('utf-8'))
 
         if self.path == '/api/adicionar':
-            prisma_solicitado = str(dados["prisma"]).strip()
+            prisma_solicitado = str(dados.get("prisma", "")).strip()
             
             for carro in fila_veiculos:
-                if str(carro["prisma"]).strip() == prisma_solicitado:
+                if str(carro.get("prisma", "")).strip() == prisma_solicitado:
                     self.send_response(400)
                     self.end_headers()
                     self.wfile.write(b"DUPLICADO")
@@ -101,30 +107,45 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
 
             novo_carro = {
                 "id": dados["id"],
+                "placa": str(dados.get("placa", "")).strip().upper(),
+                "modelo": str(dados.get("modelo", "")).strip().upper(),
                 "prisma": prisma_solicitado,
-                "hora": dados["hora"]
+                "hora_solicitacao": dados["hora_solicitacao"]
             }
             fila_veiculos.append(novo_carro)
-            historico_veiculos.insert(0, novo_carro)
-            historico_veiculos = historico_veiculos[:20] 
             
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"OK")
-            print(f"[CAIXA] Identificador {prisma_solicitado} solicitado as {dados['hora']}.")
 
         elif self.path == '/api/baixa':
-            fila_veiculos = [c for c in fila_veiculos if c["id"] != dados["id"]]
+            carro_id = dados.get("id")
+            hora_baixa = dados.get("hora_baixa")
+            timestamp_baixa = dados.get("timestamp_baixa")
+            
+            # Encontra o carro, calcula o tempo e move para o percurso
+            carro_alvo = next((c for c in fila_veiculos if c["id"] == carro_id), None)
+            
+            if carro_alvo:
+                carro_alvo["hora_baixa"] = hora_baixa
+                carro_alvo["tempo_espera_ms"] = timestamp_baixa - carro_alvo["id"]
+                
+                historico_veiculos.insert(0, carro_alvo)
+                historico_veiculos = historico_veiculos[:20] 
+                
+                # Remove da fila de solicitações
+                global fila_veiculos
+                fila_veiculos = [c for c in fila_veiculos if c["id"] != carro_id]
+
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"OK")
-            print(f"[GARAGEM] Veiculo baixado.")
 
 def run():
     porta = int(os.environ.get('PORT', 8080))
     server_address = ('0.0.0.0', porta) 
     httpd = HTTPServer(server_address, ServidorFilaHandler)
-    print(f"SERVIDOR DO VALET RODANDO NA NUVEM NA PORTA {porta}")
+    print(f"SERVIDOR NA NUVEM NA PORTA {porta}")
     httpd.serve_forever()
 
 if __name__ == '__main__':
