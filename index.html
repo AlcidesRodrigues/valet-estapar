@@ -11,34 +11,49 @@
     
     <title>Gerenciador de Fila - Valet</title>
     <style>
-        :root { --bg-color: #121212; --card-bg: #1e1e1e; --primary: #4CAF50; --danger: #f44336; --info: #2196F3; --text: #ffffff; }
+        :root { 
+            --bg-color: #121212; 
+            --card-bg: #1e1e1e; 
+            --primary: #4CAF50; 
+            --danger: #f44336; 
+            --info: #2196F3; 
+            --text: #ffffff; 
+        }
         body { font-family: Arial, sans-serif; background-color: var(--bg-color); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; width: 100%; box-sizing: border-box; }
         
-        /* Botão de Tela Cheia */
         .btn-fullscreen { position: absolute; top: 15px; right: 15px; background: #333; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; z-index: 1000; }
         .btn-fullscreen:hover { background: #555; }
 
-        /* CENTRALIZAÇÃO FORÇADA DA LOGO */
         .container-logo { display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 25px; margin-top: 20px; }
         .logo-estapar { width: 250px; height: auto; display: block; }
 
         .container { width: 100%; max-width: 600px; background: var(--card-bg); padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); text-align: center; margin-bottom: 20px; box-sizing: border-box; }
         
-        /* Visor e Teclado */
         .visor { font-size: 3rem; background: #000; padding: 10px; border-radius: 10px; margin-bottom: 20px; min-height: 70px; color: var(--primary); display: flex; justify-content: center; align-items: center; }
+        
+        /* Teclado Adaptado para 3 colunas e novas funções */
         .teclado { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         button { padding: 15px; font-size: 1.5rem; border: none; border-radius: 10px; cursor: pointer; background: #333; color: white; transition: 0.2s; }
         button:active { transform: scale(0.95); }
-        button.btn-enviar { background: var(--primary); font-size: 2rem;}
-        button.btn-limpar { background: var(--danger); font-size: 2rem;}
         
-        /* Listas (Garagem e Log) */
-        .item-fila { display: flex; justify-content: space-between; align-items: center; background: #2a2a2a; padding: 15px 20px; margin: 10px 0; border-radius: 10px; font-size: 1.5rem; }
+        button.btn-enviar { background: var(--primary); font-size: 1.3rem; font-weight: bold; }
+        button.btn-limpar { background: var(--danger); font-size: 1.3rem; font-weight: bold; }
+        button.btn-futuro { background: #262626; color: #666; font-size: 1.3rem; } /* Estilo dos botões vazios */
+
+        .item-fila { display: flex; justify-content: space-between; align-items: center; background: #2a2a2a; padding: 15px 20px; margin: 10px 0; border-radius: 10px; font-size: 1.5rem; transition: background-color 0.3s; }
         .item-historico { justify-content: flex-start; gap: 20px; border-left: 5px solid var(--info); }
         .hora-tag { color: var(--info); font-weight: bold; font-size: 1.2rem; background: #111; padding: 5px 10px; border-radius: 5px;}
         .btn-baixa { background: var(--danger); font-size: 1.2rem; padding: 10px 20px; }
         
-        /* Menu do Topo (Abas) */
+        /* ESTILO DO ALERTA PISCANDO EM VERMELHO */
+        .alerta-atraso {
+            animation: piscarVermelho 1s infinite alternate;
+        }
+        @keyframes piscarVermelho {
+            0% { background-color: #2a2a2a; }
+            100% { background-color: #7a1515; }
+        }
+
         .view-toggle { margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 600px;}
         .btn-aba { flex: 1; min-width: 120px; font-size: 1.2rem; padding: 15px 20px; background: #3c3c3c; color: #aaaaaa; opacity: 0.8; font-weight: normal; }
         .btn-aba.active { background: var(--info); color: #ffffff; opacity: 1; font-weight: bold; box-shadow: 0 0 10px rgba(33, 150, 243, 0.5); }
@@ -67,8 +82,14 @@
             <button onclick="digitar('1')">1</button> <button onclick="digitar('2')">2</button> <button onclick="digitar('3')">3</button>
             <button onclick="digitar('4')">4</button> <button onclick="digitar('5')">5</button> <button onclick="digitar('6')">6</button>
             <button onclick="digitar('7')">7</button> <button onclick="digitar('8')">8</button> <button onclick="digitar('9')">9</button>
-            <button class="btn-limpar" onclick="limparVisor()">C</button> <button onclick="digitar('0')">0</button>
-            <button class="btn-enviar" onclick="enviarPedido()">#</button>
+            
+            <button class="btn-limpar" onclick="limparVisor()">LIMPAR</button> 
+            <button onclick="digitar('0')">0</button>
+            <button class="btn-enviar" onclick="enviarPedido()">ENVIAR</button>
+            
+            <button id="btn-ps" onclick="botaoPsPressionado()">PS</button>
+            <button id="btn-vazio1" class="btn-futuro" onclick="botaoVazio1Pressionado()">-</button>
+            <button id="btn-vazio2" class="btn-futuro" onclick="botaoVazio2Pressionado()">-</button>
         </div>
     </div>
 
@@ -83,25 +104,49 @@
     </div>
 
     <script>
+        // ========================================================
+        // ⚙️ CONFIGURAÇÃO DE TEMPO DO ALERTA (FÁCIL AJUSTE)
+        // ========================================================
+        // Altere o número abaixo para mudar o tempo do alerta (em minutos)
+        const TEMPO_ALERTA_MINUTOS = 3; 
+        // ========================================================
+
         let numeroAtual = "";
         let perfilAtual = "caixa"; 
 
-        // Função de Tela Cheia Nativa
+        // ========================================================
+        // 🛠️ FUNÇÕES DOS NOVOS BOTÕES (PROGRAME AQUI NO FUTURO)
+        // ========================================================
+        function botaoPsPressionado() {
+            // O que o botão PS faz atualmente: digita o texto "PS" no visor
+            digitar("PS");
+        }
+
+        function botaoVazio1Pressionado() {
+            // Deixado em branco para você incluir sua lógica no futuro
+            console.log("Botão vazio 1 pressionado");
+        }
+
+        function botaoVazio2Pressionado() {
+            // Deixado em branco para você incluir sua lógica no futuro
+            console.log("Botão vazio 2 pressionado");
+        }
+        // ========================================================
+
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
                     alert(`Erro ao ativar tela cheia: ${err.message}`);
                 });
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+                if (document.exitFullscreen) { document.exitFullscreen(); }
             }
         }
 
-        function digitar(num) {
+        function digitar(caractere) {
+            // Permite digitar até 4 caracteres no visor (seja número ou letras como PS)
             if (numeroAtual.length < 4) {
-                numeroAtual += num;
+                numeroAtual += caractere;
                 document.getElementById("visor-num").innerText = numeroAtual;
             }
         }
@@ -114,7 +159,7 @@
         function enviarPedido() {
             if (numeroAtual.length > 0) {
                 let novoCarro = {
-                    id: Date.now(),
+                    id: Date.now(), // Usamos o timestamp para calcular o atraso exato
                     prisma: numeroAtual,
                     hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
                 };
@@ -166,10 +211,22 @@
                 return;
             }
 
+            const agora = Date.now();
+            const limiteAtrasoMs = TEMPO_ALERTA_MINUTOS * 60 * 1000;
+
             fila.forEach((carro, index) => {
+                // Calcula há quantos milissegundos o carro foi pedido
+                const tempoDecorridoMs = agora - carro.id;
+                
+                // Se passou do limite configurado, adiciona a classe css de alerta para piscar
+                let classeAlerta = "";
+                if (tempoDecorridoMs >= limiteAtrasoMs) {
+                    classeAlerta = "alerta-atraso";
+                }
+
                 listaDiv.innerHTML += `
-                    <div class="item-fila">
-                        <span><strong>${index + 1}º</strong> - Prisma: ${carro.prisma} <small style="font-size:0.8rem; color:#888;">(${carro.hora})</small></span>
+                    <div class="item-fila ${classeAlerta}">
+                        <span><strong>${index + 1}º</strong> - Prisma: ${carro.prisma} <small style="font-size:0.8rem; color:#ccc;">(${carro.hora})</small></span>
                         <button class="btn-baixa" onclick="darBaixa(${carro.id})">BAIXA</button>
                     </div>
                 `;
@@ -220,6 +277,7 @@
             }
         }
 
+        // Sincronizador ativo a cada 2 segundos
         setInterval(() => {
             if (perfilAtual === 'garagem') solicitarAtualizacaoFila();
             else if (perfilAtual === 'log') solicitarAtualizacaoLog();
