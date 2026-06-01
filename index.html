@@ -11,58 +11,64 @@
     
     <title>Gerenciador de Fila - Valet</title>
     
-    <link rel="icon" type="image/png" href="ESTAPAR-16.png">
-    <link rel="apple-touch-icon" href="ESTAPAR-16.png">
+    <link rel="icon" type="image/png" href="ESTAPAR-04.png">
+    <link rel="apple-touch-icon" href="ESTAPAR-04.png">
     
     <style>
-        :root { 
-            --bg-color: #121212; 
-            --card-bg: #1e1e1e; 
-            --primary: #4CAF50; 
-            --danger: #f44336; 
-            --info: #2196F3; 
-            --text: #ffffff; 
-        }
+        :root { --bg-color: #121212; --card-bg: #1e1e1e; --primary: #4CAF50; --danger: #f44336; --info: #2196F3; --warning: #ff9800; --text: #ffffff; }
         body { font-family: Arial, sans-serif; background-color: var(--bg-color); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; width: 100%; box-sizing: border-box; }
         
         .btn-fullscreen { position: absolute; top: 15px; right: 15px; background: #333; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; z-index: 1000; }
-        .btn-fullscreen:hover { background: #555; }
-
+        
         .container-logo { display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 25px; margin-top: 20px; }
         .logo-estapar { width: 250px; height: auto; display: block; }
 
         .container { width: 100%; max-width: 600px; background: var(--card-bg); padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); text-align: center; margin-bottom: 20px; box-sizing: border-box; }
-        
-        .visor { font-size: 3rem; background: #000; padding: 10px; border-radius: 10px; margin-bottom: 20px; min-height: 70px; color: var(--primary); display: flex; justify-content: center; align-items: center; }
-        
-        /* Teclado Adaptado para 3 colunas e novas funções */
-        .teclado { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-        button { padding: 15px; font-size: 1.5rem; border: none; border-radius: 10px; cursor: pointer; background: #333; color: white; transition: 0.2s; }
+        .container-painel { max-width: 900px; } /* Painel é mais largo para as 2 colunas */
+
+        /* Formulário do Caixa */
+        .form-grupo { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+        .form-grupo input { padding: 15px; font-size: 1.5rem; border-radius: 10px; border: 1px solid #444; background: #000; color: var(--primary); text-align: center; font-weight: bold; }
+        .form-grupo input::placeholder { color: #555; font-weight: normal; }
+
+        button { padding: 15px; font-size: 1.3rem; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; color: white; transition: 0.2s; }
         button:active { transform: scale(0.95); }
         
-        button.btn-enviar { background: var(--primary); font-size: 1.3rem; font-weight: bold; }
-        button.btn-limpar { background: var(--danger); font-size: 1.3rem; font-weight: bold; }
-        button.btn-futuro { background: #262626; color: #666; font-size: 1.3rem; } /* Estilo dos botões vazios */
-
-        .item-fila { display: flex; justify-content: space-between; align-items: center; background: #2a2a2a; padding: 15px 20px; margin: 10px 0; border-radius: 10px; font-size: 1.5rem; transition: background-color 0.3s; }
-        .item-historico { justify-content: flex-start; gap: 20px; border-left: 5px solid var(--info); }
-        .hora-tag { color: var(--info); font-weight: bold; font-size: 1.2rem; background: #111; padding: 5px 10px; border-radius: 5px;}
-        .btn-baixa { background: var(--danger); font-size: 1.2rem; padding: 10px 20px; }
+        .botoes-acao { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .btn-enviar { background: var(--primary); }
+        .btn-limpar { background: var(--danger); }
         
-        /* ESTILO DO ALERTA PISCANDO EM VERMELHO */
-        .alerta-atraso {
-            animation: piscarVermelho 1s infinite alternate;
-        }
-        @keyframes piscarVermelho {
-            0% { background-color: #2a2a2a; }
-            100% { background-color: #7a1515; }
-        }
+        .botoes-extras { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .btn-ps { background: var(--info); }
+        .btn-futuro { background: #262626; color: #666; }
 
-        .view-toggle { margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 600px;}
-        .btn-aba { flex: 1; min-width: 120px; font-size: 1.2rem; padding: 15px 20px; background: #3c3c3c; color: #aaaaaa; opacity: 0.8; font-weight: normal; }
+        /* Listas e Painel */
+        .item-fila { display: flex; flex-direction: column; background: #2a2a2a; padding: 15px; margin: 10px 0; border-radius: 10px; text-align: left; font-size: 1.2rem; transition: 0.3s; }
+        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 1.4rem;}
+        .item-dados { color: #aaa; font-size: 1rem; }
+        
+        .btn-baixa { background: var(--danger); font-size: 1.1rem; padding: 10px 20px; align-self: flex-end; margin-top: 10px;}
+
+        /* Colunas do Painel do Cliente */
+        .painel-header-box { background: var(--info); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; }
+        .painel-grid { display: flex; gap: 20px; }
+        .painel-coluna { flex: 1; background: #222; padding: 15px; border-radius: 10px; }
+        .painel-coluna h3 { margin-top: 0; color: var(--warning); border-bottom: 2px solid #444; padding-bottom: 10px;}
+        
+        /* ALERTA PISCANDO EM VERMELHO */
+        .alerta-atraso { animation: piscarVermelho 1s infinite alternate; border: 2px solid #ff0000; }
+        @keyframes piscarVermelho { 0% { background-color: #2a2a2a; } 100% { background-color: #630000; } }
+
+        /* Abas Superiores */
+        .view-toggle { margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 900px;}
+        .btn-aba { flex: 1; min-width: 120px; padding: 15px 20px; background: #3c3c3c; color: #aaaaaa; opacity: 0.8; font-weight: normal; }
         .btn-aba.active { background: var(--info); color: #ffffff; opacity: 1; font-weight: bold; box-shadow: 0 0 10px rgba(33, 150, 243, 0.5); }
         
         .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .painel-grid { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
@@ -75,138 +81,142 @@
 
     <div class="view-toggle">
         <button id="btn-caixa" class="btn-aba active" onclick="mudarPerfil('caixa')">CAIXA</button>
-        <button id="btn-garagem" class="btn-aba" onclick="mudarPerfil('garagem')">GARAGEM</button>
-        <button id="btn-log" class="btn-aba" onclick="mudarPerfil('log')">LOG</button>
+        <button id="btn-solicitacoes" class="btn-aba" onclick="mudarPerfil('solicitacoes')">SOLICITAÇÕES</button>
+        <button id="btn-painel" class="btn-aba" onclick="mudarPerfil('painel')">PAINEL (CLIENTE)</button>
     </div>
 
     <div id="tela-caixa" class="container">
-        <h2>CAIXA - SOLICITAR VEÍCULO</h2>
-        <div id="visor-num" class="visor"></div>
-        <div class="teclado">
-            <button onclick="digitar('1')">1</button> <button onclick="digitar('2')">2</button> <button onclick="digitar('3')">3</button>
-            <button onclick="digitar('4')">4</button> <button onclick="digitar('5')">5</button> <button onclick="digitar('6')">6</button>
-            <button onclick="digitar('7')">7</button> <button onclick="digitar('8')">8</button> <button onclick="digitar('9')">9</button>
-            
-            <button class="btn-limpar" onclick="limparVisor()">LIMPAR</button> 
-            <button onclick="digitar('0')">0</button>
+        <h2>SOLICITAR VEÍCULO</h2>
+        
+        <div class="form-grupo">
+            <input type="text" id="input-placa" placeholder="Placa (Ex: ABC1234)" style="text-transform: uppercase;">
+            <input type="text" id="input-modelo" placeholder="Modelo do Carro" style="text-transform: uppercase;">
+            <input type="text" id="input-prisma" placeholder="Nº do Prisma">
+        </div>
+
+        <div class="botoes-acao">
+            <button class="btn-limpar" onclick="limparFormulario()">LIMPAR</button> 
             <button class="btn-enviar" onclick="enviarPedido()">ENVIAR</button>
-            
-            <button id="btn-ps" onclick="botaoPsPressionado()">PS</button>
-            <button id="btn-vazio1" class="btn-futuro" onclick="botaoVazio1Pressionado()">-</button>
-            <button id="btn-vazio2" class="btn-futuro" onclick="botaoVazio2Pressionado()">-</button>
+        </div>
+        
+        <div class="botoes-extras">
+            <button id="btn-ps" class="btn-ps" onclick="botaoPsPressionado()">PS</button>
+            <button id="btn-vazio1" class="btn-futuro" onclick="botaoFuturo()">-</button>
+            <button id="btn-vazio2" class="btn-futuro" onclick="botaoFuturo()">-</button>
+            <button id="btn-vazio3" class="btn-futuro" onclick="botaoFuturo()">-</button>
         </div>
     </div>
 
-    <div id="tela-garagem" class="container hidden">
-        <h2>GARAGEM - FILA DE ESPERA</h2>
+    <div id="tela-solicitacoes" class="container hidden">
+        <h2>FILA DE SOLICITAÇÕES</h2>
         <div id="lista-fila"></div>
     </div>
 
-    <div id="tela-log" class="container hidden">
-        <h2>LOG - ÚLTIMOS 20 PEDIDOS</h2>
-        <div id="lista-log"></div>
+    <div id="tela-painel" class="container container-painel hidden">
+        <div class="painel-header-box">
+            TEMPO MÉDIO DE ESPERA: <span id="display-tempo-medio">Calculando...</span>
+        </div>
+        
+        <div class="painel-grid">
+            <div class="painel-coluna">
+                <h3>SOLICITAÇÕES (Na Fila)</h3>
+                <div id="painel-col-solicitacoes"></div>
+            </div>
+            
+            <div class="painel-coluna">
+                <h3>PERCURSO (Últimos 20)</h3>
+                <div id="painel-col-percurso"></div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // ========================================================
-        // ⚙️ CONFIGURAÇÃO DE TEMPO DO ALERTA (FÁCIL AJUSTE)
-        // ========================================================
-        // Altere o número abaixo para mudar o tempo do alerta (em minutos)
-        const TEMPO_ALERTA_MINUTOS = 3; 
-        // ========================================================
-
-        let numeroAtual = "";
         let perfilAtual = "caixa"; 
+        let tempoMedioAtualMs = 600000; // Inicia com 10 min de tolerância caso não haja histórico
 
-        // ========================================================
-        // 🛠️ FUNÇÕES DOS NOVOS BOTÕES (PROGRAME AQUI NO FUTURO)
-        // ========================================================
+        // Funções dos botões do Caixa
         function botaoPsPressionado() {
-            // O que o botão PS faz atualmente: digita o texto "PS" no visor
-            digitar("PS");
+            document.getElementById("input-prisma").value = "PS";
         }
-
-        function botaoVazio1Pressionado() {
-            // Deixado em branco para você incluir sua lógica no futuro
-            console.log("Botão vazio 1 pressionado");
+        function botaoFuturo() {
+            console.log("Botão reservado para o futuro.");
         }
-
-        function botaoVazio2Pressionado() {
-            // Deixado em branco para você incluir sua lógica no futuro
-            console.log("Botão vazio 2 pressionado");
-        }
-        // ========================================================
 
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    alert(`Erro ao ativar tela cheia: ${err.message}`);
-                });
+                document.documentElement.requestFullscreen().catch(e => {});
             } else {
                 if (document.exitFullscreen) { document.exitFullscreen(); }
             }
         }
 
-        function digitar(caractere) {
-            // Permite digitar até 4 caracteres no visor (seja número ou letras como PS)
-            if (numeroAtual.length < 4) {
-                numeroAtual += caractere;
-                document.getElementById("visor-num").innerText = numeroAtual;
-            }
-        }
-
-        function limparVisor() {
-            numeroAtual = "";
-            document.getElementById("visor-num").innerText = "";
+        function limparFormulario() {
+            document.getElementById("input-placa").value = "";
+            document.getElementById("input-modelo").value = "";
+            document.getElementById("input-prisma").value = "";
         }
 
         function enviarPedido() {
-            if (numeroAtual.length > 0) {
-                let novoCarro = {
-                    id: Date.now(), // Usamos o timestamp para calcular o atraso exato
-                    prisma: numeroAtual,
-                    hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                };
-                
-                fetch('/api/adicionar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(novoCarro)
-                }).then(response => {
-                    if (!response.ok) {
-                        alert("PRISMA JÁ SOLICITADO");
-                        limparVisor();
-                    } else {
-                        limparVisor();
-                        if(perfilAtual === 'log') solicitarAtualizacaoLog();
-                    }
-                });
-            }
-        }
+            let placa = document.getElementById("input-placa").value.trim();
+            let modelo = document.getElementById("input-modelo").value.trim();
+            let prisma = document.getElementById("input-prisma").value.trim();
 
-        function darBaixa(id) {
-            fetch('/api/baixa', {
+            if (prisma === "") {
+                alert("O campo PRISMA é obrigatório!");
+                return;
+            }
+
+            let novoCarro = {
+                id: Date.now(), 
+                placa: placa,
+                modelo: modelo,
+                prisma: prisma,
+                hora_solicitacao: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            };
+            
+            fetch('/api/adicionar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: id })
-            }).then(() => {
-                solicitarAtualizacaoFila();
+                body: JSON.stringify(novoCarro)
+            }).then(response => {
+                if (!response.ok) {
+                    alert("PRISMA JÁ SOLICITADO");
+                } else {
+                    limparFormulario();
+                    solicitarAtualizacaoDados();
+                }
             });
         }
 
-        function solicitarAtualizacaoFila() {
-            fetch('/api/fila')
-                .then(response => response.json())
-                .then(fila => renderizarFila(fila));
+        function darBaixa(id) {
+            let dadosBaixa = {
+                id: id,
+                timestamp_baixa: Date.now(),
+                hora_baixa: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            };
+
+            fetch('/api/baixa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosBaixa)
+            }).then(() => {
+                solicitarAtualizacaoDados();
+            });
         }
 
-        function solicitarAtualizacaoLog() {
-            fetch('/api/historico')
+        // UNIFICADO: Puxa Fila, Percurso e Tempo Médio de uma vez só!
+        function solicitarAtualizacaoDados() {
+            fetch('/api/dados')
                 .then(response => response.json())
-                .then(historico => renderizarLog(historico));
+                .then(dados => {
+                    tempoMedioAtualMs = dados.tempo_medio;
+                    
+                    if (perfilAtual === 'solicitacoes') renderizarSolicitacoes(dados.fila);
+                    if (perfilAtual === 'painel') renderizarPainel(dados);
+                });
         }
 
-        function renderizarFila(fila) {
+        function renderizarSolicitacoes(fila) {
             const listaDiv = document.getElementById("lista-fila");
             listaDiv.innerHTML = "";
             
@@ -216,75 +226,106 @@
             }
 
             const agora = Date.now();
-            const limiteAtrasoMs = TEMPO_ALERTA_MINUTOS * 60 * 1000;
 
             fila.forEach((carro, index) => {
-                // Calcula há quantos milissegundos o carro foi pedido
                 const tempoDecorridoMs = agora - carro.id;
                 
-                // Se passou do limite configurado, adiciona a classe css de alerta para piscar
+                // Se o carro está esperando MAIS do que o TEMPO MÉDIO atual do painel, ele pisca!
                 let classeAlerta = "";
-                if (tempoDecorridoMs >= limiteAtrasoMs) {
+                if (tempoDecorridoMs > tempoMedioAtualMs) {
                     classeAlerta = "alerta-atraso";
                 }
 
                 listaDiv.innerHTML += `
                     <div class="item-fila ${classeAlerta}">
-                        <span><strong>${index + 1}º</strong> - Prisma: ${carro.prisma} <small style="font-size:0.8rem; color:#ccc;">(${carro.hora})</small></span>
+                        <div class="item-header">
+                            <span><strong>${index + 1}º</strong> - Prisma: <strong>${carro.prisma}</strong></span>
+                            <span style="color:var(--info);">${carro.hora_solicitacao}</span>
+                        </div>
+                        <div class="item-dados">
+                            Placa: ${carro.placa || 'N/A'} | Modelo: ${carro.modelo || 'N/A'}
+                        </div>
                         <button class="btn-baixa" onclick="darBaixa(${carro.id})">BAIXA</button>
                     </div>
                 `;
             });
         }
 
-        function renderizarLog(historico) {
-            const listaDiv = document.getElementById("lista-log");
-            listaDiv.innerHTML = "";
-            
-            if (!historico || historico.length === 0) {
-                listaDiv.innerHTML = "<p style='color: #888;'>O LOG está vazio.</p>";
-                return;
+        function formatarTempo(ms) {
+            let minutos = Math.round(ms / 60000);
+            return minutos + " min";
+        }
+
+        function renderizarPainel(dados) {
+            // Atualiza a caixa de tempo médio
+            document.getElementById("display-tempo-medio").innerText = formatarTempo(dados.tempo_medio);
+
+            // Coluna 1: Solicitações (Fila)
+            const colSolicitacoes = document.getElementById("painel-col-solicitacoes");
+            colSolicitacoes.innerHTML = "";
+            if (dados.fila.length === 0) {
+                colSolicitacoes.innerHTML = "<p style='color:#666;'>Vazio</p>";
+            } else {
+                dados.fila.forEach((carro) => {
+                    colSolicitacoes.innerHTML += `
+                        <div class="item-fila" style="padding:10px;">
+                            <strong>Prisma: ${carro.prisma}</strong>
+                            <div class="item-dados" style="font-size:0.9rem;">Placa: ${carro.placa || 'N/A'} | Solicitado: ${carro.hora_solicitacao}</div>
+                        </div>
+                    `;
+                });
             }
 
-            historico.forEach((carro) => {
-                listaDiv.innerHTML += `
-                    <div class="item-fila item-historico">
-                        <span class="hora-tag">${carro.hora}</span>
-                        <span>Prisma: <strong>${carro.prisma}</strong></span>
-                    </div>
-                `;
-            });
+            // Coluna 2: Percurso (Histórico)
+            const colPercurso = document.getElementById("painel-col-percurso");
+            colPercurso.innerHTML = "";
+            if (dados.historico.length === 0) {
+                colPercurso.innerHTML = "<p style='color:#666;'>Vazio</p>";
+            } else {
+                dados.historico.forEach((carro) => {
+                    colPercurso.innerHTML += `
+                        <div class="item-fila" style="padding:10px; border-left: 5px solid var(--primary);">
+                            <strong>Prisma: ${carro.prisma}</strong>
+                            <div class="item-dados" style="font-size:0.8rem;">
+                                Placa: ${carro.placa || 'N/A'}<br>
+                                Solicitado: ${carro.hora_solicitacao} | Baixa: <span style="color:var(--primary);">${carro.hora_baixa}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
         }
 
         function mudarPerfil(perfil) {
             perfilAtual = perfil;
             
             document.getElementById("btn-caixa").classList.remove("active");
-            document.getElementById("btn-garagem").classList.remove("active");
-            document.getElementById("btn-log").classList.remove("active");
+            document.getElementById("btn-solicitacoes").classList.remove("active");
+            document.getElementById("btn-painel").classList.remove("active");
 
             document.getElementById("tela-caixa").classList.add("hidden");
-            document.getElementById("tela-garagem").classList.add("hidden");
-            document.getElementById("tela-log").classList.add("hidden");
+            document.getElementById("tela-solicitacoes").classList.add("hidden");
+            document.getElementById("tela-painel").classList.add("hidden");
 
             if (perfil === 'caixa') {
                 document.getElementById("btn-caixa").classList.add("active");
                 document.getElementById("tela-caixa").classList.remove("hidden");
-            } else if (perfil === 'garagem') {
-                document.getElementById("btn-garagem").classList.add("active");
-                document.getElementById("tela-garagem").classList.remove("hidden");
-                solicitarAtualizacaoFila();
-            } else if (perfil === 'log') {
-                document.getElementById("btn-log").classList.add("active");
-                document.getElementById("tela-log").classList.remove("hidden");
-                solicitarAtualizacaoLog();
+            } else if (perfil === 'solicitacoes') {
+                document.getElementById("btn-solicitacoes").classList.add("active");
+                document.getElementById("tela-solicitacoes").classList.remove("hidden");
+                solicitarAtualizacaoDados();
+            } else if (perfil === 'painel') {
+                document.getElementById("btn-painel").classList.add("active");
+                document.getElementById("tela-painel").classList.remove("hidden");
+                solicitarAtualizacaoDados();
             }
         }
 
-        // Sincronizador ativo a cada 2 segundos
+        // Sincronizador inteligente
         setInterval(() => {
-            if (perfilAtual === 'garagem') solicitarAtualizacaoFila();
-            else if (perfilAtual === 'log') solicitarAtualizacaoLog();
+            if (perfilAtual === 'solicitacoes' || perfilAtual === 'painel') {
+                solicitarAtualizacaoDados();
+            }
         }, 2000);
     </script>
 </body>
