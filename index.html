@@ -55,7 +55,6 @@
         .painel-coluna { flex: 1; background: #222; padding: 15px; border-radius: 10px; }
         .painel-coluna h3 { margin-top: 0; color: var(--warning); border-bottom: 2px solid #444; padding-bottom: 10px; text-align: center;}
         
-        /* ALERTA PISCANDO EM VERMELHO */
         .alerta-atraso { animation: piscarVermelho 1s infinite alternate; border: 2px solid #ff0000; }
         @keyframes piscarVermelho { 0% { background-color: #2a2a2a; } 100% { background-color: #630000; } }
 
@@ -93,234 +92,27 @@
             <input type="text" id="input-modelo" list="lista-modelos" placeholder="Modelo do Carro" style="text-transform: uppercase;">
             
             <datalist id="lista-modelos">
-                         <option value="AUDI">
-                <option value="OUTROS">
-                <option value="IMPORTADO">
-<option value="BMW">
-<option value="BYD">
-<option value="CAOA CHERY">
-<option value="CHEVROLET">
-<option value="CITROËN">
-<option value="FIAT">
-<option value="FORD">
-<option value="HONDA">
-<option value="HYUNDAI">
-<option value="JEEP">
-<option value="KIA">
-<option value="LAND ROVER">
-<option value="MERCEDES-BENZ">
-<option value="MITSUBISHI">
-<option value="NISSAN">
-<option value="PEUGEOT">
-<option value="RENAULT">
-<option value="TOYOTA">
-<option value="VOLKSWAGEN">
-<option value="VOLVO">
-<option value="AGILE">
-<option value="AMAROK">
-<option value="ARGO">
-<option value="ASTRA">
-<option value="AUDI A3">
-<option value="AUDI A4">
-<option value="AUDI A5">
-<option value="AUDI Q3">
-<option value="AUDI Q5">
-<option value="AZERA">
-<option value="BANDEIRANTE">
-<option value="BLAZER">
-<option value="BONGO">
-<option value="BORA">
-<option value="BOXSTER">
-<option value="BRONCO">
-<option value="C3">
-<option value="C3 AIRCROSS">
-<option value="C4 CACTUS">
-<option value="C4 LOUNGE">
-<option value="C4 PICASSO">
-<option value="CAMARO">
-<option value="CAMRY">
-<option value="CAPTIVA">
-<option value="CAPTUR">
-<option value="CELTA">
-<option value="CERATO">
-<option value="CHEROKEE">
-<option value="CITY">
-<option value="CIVIC">
-<option value="CLIO">
-<option value="COBALT">
-<option value="COMMANDER">
-<option value="COMPASS">
-<option value="COOPER">
-<option value="COROLLA">
-<option value="COROLLA CROSS">
-<option value="CORSA">
-<option value="CRETA">
-<option value="CRONOS">
-<option value="CRUZE">
-<option value="DEFENDER">
-<option value="DISCOVERY">
-<option value="DOBLO">
-<option value="DOLPHIN">
-<option value="DOLPHIN MINI">
-<option value="DUCATO">
-<option value="DUSTER">
-<option value="ECLIPSE CROSS">
-<option value="ECOSPORT">
-<option value="EDGE">
-<option value="ELANTRA">
-<option value="EQUINOX">
-<option value="ESCORT">
-<option value="ETIOS">
-<option value="EVOQUE">
-<option value="EXPERT">
-<option value="FASTBACK">
-<option value="FIESTA">
-<option value="FIORINO">
-<option value="FIT">
-<option value="FLUENCE">
-<option value="FOCUS">
-<option value="FORESTER">
-<option value="FOX">
-<option value="FRONTIER">
-<option value="FUSION">
-<option value="GOL">
-<option value="GOLF">
-<option value="GRAND CHEROKEE">
-<option value="GRAND SIENA">
-<option value="GRAND VITARA">
-<option value="HAVAL H6">
-<option value="HB20">
-<option value="HB20S">
-<option value="HB20X">
-<option value="HILUX">
-<option value="HR">
-<option value="HR-V">
-<option value="I30">
-<option value="IDEA">
-<option value="IMPREZA">
-<option value="JETTA">
-<option value="JIMNY">
-<option value="JOURNEY">
-<option value="JUMPER">
-<option value="JUMPY">
-<option value="KA">
-<option value="KANGOO">
-<option value="KICKS">
-<option value="KOMBI">
-<option value="KWID">
-<option value="L200">
-<option value="LANCER">
-<option value="LEAF">
-<option value="LEGACY">
-<option value="LINEA">
-<option value="LIVINA">
-<option value="LOGAN">
-<option value="MACAN">
-<option value="MARCH">
-<option value="MASTER">
-<option value="MAVERICK">
-<option value="MEGANE">
-<option value="MERIVA">
-<option value="MOBI">
-<option value="MONTANA">
-<option value="MUSTANG">
-<option value="NIVUS">
-<option value="NX">
-<option value="ONIX">
-<option value="ONIX PLUS">
-<option value="ORA 03">
-<option value="OROCH">
-<option value="OUTBACK">
-<option value="OUTLANDER">
-<option value="PAJERO">
-<option value="PALIO">
-<option value="PANAMERA">
-<option value="PARATI">
-<option value="PARTNER">
-<option value="PASSAT">
-<option value="PEUGEOT 206">
-<option value="PEUGEOT 207">
-<option value="PEUGEOT 208">
-<option value="PEUGEOT 2008">
-<option value="PEUGEOT 3008">
-<option value="PEUGEOT 308">
-<option value="PICANTO">
-<option value="POLO">
-<option value="PRISMA">
-<option value="PRIUS">
-<option value="PULSE">
-<option value="PUNTO">
-<option value="QUANTUM">
-<option value="QQ">
-<option value="RAMPAGE">
-<option value="RANGER">
-<option value="RAV4">
-<option value="RENEGADE">
-<option value="S-CROSS">
-<option value="S10">
-<option value="SANDERO">
-<option value="SANTA FE">
-<option value="SANTANA">
-<option value="SAVEIRO">
-<option value="SCENIC">
-<option value="SEAL">
-<option value="SENTRA">
-<option value="SIENA">
-<option value="SONATA">
-<option value="SONG PLUS">
-<option value="SORENTO">
-<option value="SOUL">
-<option value="SPACEFOX">
-<option value="SPIN">
-<option value="SPORTAGE">
-<option value="SPRINTER">
-<option value="STEPWAY">
-<option value="STILO">
-<option value="STRADA">
-<option value="SW4">
-<option value="T-CROSS">
-<option value="TAOS">
-<option value="TAYCAN">
-<option value="TERRITORY">
-<option value="TIGGO 2">
-<option value="TIGGO 3X">
-<option value="TIGGO 5X">
-<option value="TIGGO 7">
-<option value="TIGGO 8">
-<option value="TIGUAN">
-<option value="TIIDA">
-<option value="TORO">
-<option value="TOWN & COUNTRY">
-<option value="TRACKER">
-<option value="TRAILBLAZER">
-<option value="TRITON">
-<option value="TUCSON">
-<option value="UNO">
-<option value="UP">
-<option value="UX">
-<option value="VECTRA">
-<option value="VELAR">
-<option value="VELOSTER">
-<option value="VERACRUZ">
-<option value="VERSA">
-<option value="VIRTUS">
-<option value="VITARA">
-<option value="VOYAGE">
-<option value="WR-V">
-<option value="WRANGLER">
-<option value="X1">
-<option value="X3">
-<option value="X5">
-<option value="XC40">
-<option value="XC60">
-<option value="XC90">
-<option value="XSARA PICASSO">
-<option value="YARIS">
-<option value="YUAN PLUS">
-<option value="Z4">
-<option value="ZAFIRA">
-<option value="ZR-V">
-
+                <option value="AUDI">
+                <option value="BMW">
+                <option value="BYD">
+                <option value="CAOA CHERY">
+                <option value="CHEVROLET">
+                <option value="CITROËN">
+                <option value="FIAT">
+                <option value="FORD">
+                <option value="HONDA">
+                <option value="HYUNDAI">
+                <option value="JEEP">
+                <option value="KIA">
+                <option value="LAND ROVER">
+                <option value="MERCEDES-BENZ">
+                <option value="MITSUBISHI">
+                <option value="NISSAN">
+                <option value="PEUGEOT">
+                <option value="RENAULT">
+                <option value="TOYOTA">
+                <option value="VOLKSWAGEN">
+                <option value="VOLVO">
             </datalist>
 
             <input type="text" id="input-prisma" placeholder="Nº do Prisma">
@@ -345,4 +137,176 @@
     </div>
 
     <div id="tela-painel" class="container container-painel hidden">
-        <div class="pain
+        <div class="painel-header-box">
+            TEMPO MÉDIO DE ESPERA: <span id="display-tempo-medio">Calculando...</span>
+        </div>
+        
+        <div class="painel-grid">
+            <div class="painel-coluna">
+                <h3>SOLICITAÇÕES (Na Fila)</h3>
+                <div id="painel-col-solicitacoes"></div>
+            </div>
+            
+            <div class="painel-coluna">
+                <h3>PERCURSO (Últimos 20)</h3>
+                <div id="painel-col-percurso"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let perfilAtual = "caixa"; 
+        let tempoMedioAtualMs = 600000; 
+
+        function botaoPsPressionado() {
+            try {
+                document.getElementById("input-prisma").value = "PS";
+            } catch(e) { console.error(e); }
+        }
+        function botaoFuturo() {
+            console.log("Botão reservado para o futuro.");
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => {});
+            } else {
+                if (document.exitFullscreen) { document.exitFullscreen(); }
+            }
+        }
+
+        function limparFormulario() {
+            try {
+                document.getElementById("input-placa").value = "";
+                document.getElementById("input-modelo").value = "";
+                document.getElementById("input-prisma").value = "";
+            } catch(e) { console.error(e); }
+        }
+
+        function enviarPedido() {
+            try {
+                let placa = document.getElementById("input-placa").value.trim();
+                let modelo = document.getElementById("input-modelo").value.trim();
+                let prisma = document.getElementById("input-prisma").value.trim();
+
+                if (prisma === "") {
+                    alert("O campo PRISMA é obrigatório!");
+                    return;
+                }
+
+                let novoCarro = {
+                    id: Date.now(), 
+                    placa: placa,
+                    modelo: modelo,
+                    prisma: prisma,
+                    hora_solicitacao: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                };
+                
+                fetch('/api/adicionar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(novoCarro)
+                }).then(response => {
+                    if (!response.ok) {
+                        alert("PRISMA JÁ SOLICITADO");
+                    } else {
+                        limparFormulario();
+                        solicitarAtualizacaoDados();
+                    }
+                }).catch(erro => {
+                    alert("Erro ao enviar pedido. Verifique sua conexão.");
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        function darBaixa(id) {
+            try {
+                let dadosBaixa = {
+                    id: id,
+                    timestamp_baixa: Date.now(),
+                    hora_baixa: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                };
+
+                fetch('/api/baixa', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dadosBaixa)
+                }).then(() => {
+                    solicitarAtualizacaoDados();
+                }).catch(erro => {
+                    console.error("Erro na baixa:", erro);
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        function solicitarAtualizacaoDados() {
+            fetch('/api/dados')
+                .then(response => {
+                    if (!response.ok) throw new Error("Erro na rede");
+                    return response.json();
+                })
+                .then(dados => {
+                    tempoMedioAtualMs = dados.tempo_medio;
+                    if (perfilAtual === 'solicitacoes') renderizarSolicitacoes(dados.fila);
+                    if (perfilAtual === 'painel') renderizarPainel(dados);
+                })
+                .catch(erro => {
+                    console.log("Aguardando servidor ou erro de conexão...");
+                });
+        }
+
+        function renderizarSolicitacoes(fila) {
+            try {
+                const listaDiv = document.getElementById("lista-fila");
+                listaDiv.innerHTML = "";
+                
+                if (!fila || fila.length === 0) {
+                    listaDiv.innerHTML = "<p style='color: #888;'>Nenhum veículo na fila.</p>";
+                    return;
+                }
+
+                const agora = Date.now();
+
+                fila.forEach((carro, index) => {
+                    const tempoDecorridoMs = agora - carro.id;
+                    let classeAlerta = "";
+                    if (tempoDecorridoMs > tempoMedioAtualMs) {
+                        classeAlerta = "alerta-atraso";
+                    }
+
+                    listaDiv.innerHTML += `
+                        <div class="item-fila ${classeAlerta}">
+                            <div class="item-header">
+                                <span><strong>${index + 1}º</strong> - Prisma: <strong>${carro.prisma}</strong></span>
+                                <span style="color:var(--info);">${carro.hora_solicitacao}</span>
+                            </div>
+                            <div class="item-dados">
+                                Placa: ${carro.placa || 'N/A'} | Modelo: ${carro.modelo || 'N/A'}
+                            </div>
+                            <button class="btn-baixa" onclick="darBaixa(${carro.id})">BAIXA</button>
+                        </div>
+                    `;
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        function formatarTempo(ms) {
+            let minutos = Math.round(ms / 60000);
+            return minutos + " min";
+        }
+
+        function renderizarPainel(dados) {
+            try {
+                document.getElementById("display-tempo-medio").innerText = formatarTempo(dados.tempo_medio);
+
+                const colSolicitacoes = document.getElementById("painel-col-solicitacoes");
+                colSolicitacoes.innerHTML = "";
+                if (dados.fila.length === 0) {
+                    colSolicitacoes.innerHTML = "<p style='color:#666; text-align:center;'>Vazio</p>";
+                } else {
+                    dados.fila.forEach((carro) => {
+                        colSolicitacoes.innerHTML += `
+                            <div class="item-fila" style="padding:10px;">
+                                <strong>Prisma: ${carro.prisma}</strong>
+                                <div class="item-dados" style="font-size:0.9rem;">
+                                    Placa: ${
