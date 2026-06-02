@@ -11,7 +11,7 @@
     
     <title>Gerenciador de Fila - Valet</title>
     
-    <link rel="icon" type="image/png" href="ESTAPAR-16.png">
+    <link rel="icon" type="image/png" href="ESTAPAR-04.png">
     <link rel="apple-touch-icon" href="ESTAPAR-04.png">
     
     <style>
@@ -50,11 +50,12 @@
         .btn-baixa { background: var(--danger); font-size: 1.1rem; padding: 10px 20px; align-self: flex-end; margin-top: 10px;}
 
         /* Colunas do Painel do Cliente */
-        .painel-header-box { background: var(--info); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; text-align: center; }
+        .painel-header-box { background: var(--info); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; }
         .painel-grid { display: flex; gap: 20px; }
         .painel-coluna { flex: 1; background: #222; padding: 15px; border-radius: 10px; }
-        .painel-coluna h3 { margin-top: 0; color: var(--warning); border-bottom: 2px solid #444; padding-bottom: 10px; text-align: center;}
+        .painel-coluna h3 { margin-top: 0; color: var(--warning); border-bottom: 2px solid #444; padding-bottom: 10px;}
         
+        /* ALERTA PISCANDO EM VERMELHO */
         .alerta-atraso { animation: piscarVermelho 1s infinite alternate; border: 2px solid #ff0000; }
         @keyframes piscarVermelho { 0% { background-color: #2a2a2a; } 100% { background-color: #630000; } }
 
@@ -89,30 +90,41 @@
         
         <div class="form-grupo">
             <input type="text" id="input-placa" placeholder="Placa (Ex: ABC1234)" style="text-transform: uppercase;">
+            
             <input type="text" id="input-modelo" list="lista-modelos" placeholder="Modelo do Carro" style="text-transform: uppercase;">
             
             <datalist id="lista-modelos">
-                <option value="AUDI">
-                <option value="BMW">
-                <option value="BYD">
-                <option value="CAOA CHERY">
-                <option value="CHEVROLET">
-                <option value="CITROËN">
-                <option value="FIAT">
-                <option value="FORD">
-                <option value="HONDA">
-                <option value="HYUNDAI">
-                <option value="JEEP">
-                <option value="KIA">
-                <option value="LAND ROVER">
-                <option value="MERCEDES-BENZ">
-                <option value="MITSUBISHI">
-                <option value="NISSAN">
-                <option value="PEUGEOT">
-                <option value="RENAULT">
-                <option value="TOYOTA">
-                <option value="VOLKSWAGEN">
-                <option value="VOLVO">
+                <option value="HB20">
+                <option value="ONIX">
+                <option value="COROLLA">
+                <option value="CIVIC">
+                <option value="POLO">
+                <option value="ARGO">
+                <option value="COMPASS">
+                <option value="RENEGADE">
+                <option value="GOL">
+                <option value="TRACKER">
+                <option value="KICKS">
+                <option value="CRETA">
+                <option value="HR-V">
+                <option value="NIVUS">
+                <option value="T-CROSS">
+                <option value="SAVEIRO">
+                <option value="STRADA">
+                <option value="TORO">
+                <option value="HILUX">
+                <option value="S10">
+                <option value="YARIS">
+                <option value="FIT">
+                <option value="MOBI">
+                <option value="KWID">
+                <option value="208">
+                <option value="FASTBACK">
+                <option value="PULSE">
+                <option value="COMPASS">
+                <option value="CITY">
+                <option value="CRUZE">
+                <option value="SW4">
             </datalist>
 
             <input type="text" id="input-prisma" placeholder="Nº do Prisma">
@@ -159,9 +171,7 @@
         let tempoMedioAtualMs = 600000; 
 
         function botaoPsPressionado() {
-            try {
-                document.getElementById("input-prisma").value = "PS";
-            } catch(e) { console.error(e); }
+            document.getElementById("input-prisma").value = "PS";
         }
         function botaoFuturo() {
             console.log("Botão reservado para o futuro.");
@@ -176,118 +186,102 @@
         }
 
         function limparFormulario() {
-            try {
-                document.getElementById("input-placa").value = "";
-                document.getElementById("input-modelo").value = "";
-                document.getElementById("input-prisma").value = "";
-            } catch(e) { console.error(e); }
+            document.getElementById("input-placa").value = "";
+            document.getElementById("input-modelo").value = "";
+            document.getElementById("input-prisma").value = "";
         }
 
         function enviarPedido() {
-            try {
-                let placa = document.getElementById("input-placa").value.trim();
-                let modelo = document.getElementById("input-modelo").value.trim();
-                let prisma = document.getElementById("input-prisma").value.trim();
+            let placa = document.getElementById("input-placa").value.trim();
+            let modelo = document.getElementById("input-modelo").value.trim();
+            let prisma = document.getElementById("input-prisma").value.trim();
 
-                if (prisma === "") {
-                    alert("O campo PRISMA é obrigatório!");
-                    return;
+            if (prisma === "") {
+                alert("O campo PRISMA é obrigatório!");
+                return;
+            }
+
+            let novoCarro = {
+                id: Date.now(), 
+                placa: placa,
+                modelo: modelo,
+                prisma: prisma,
+                hora_solicitacao: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            };
+            
+            fetch('/api/adicionar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(novoCarro)
+            }).then(response => {
+                if (!response.ok) {
+                    alert("PRISMA JÁ SOLICITADO");
+                } else {
+                    limparFormulario();
+                    solicitarAtualizacaoDados();
                 }
-
-                let novoCarro = {
-                    id: Date.now(), 
-                    placa: placa,
-                    modelo: modelo,
-                    prisma: prisma,
-                    hora_solicitacao: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                };
-                
-                fetch('/api/adicionar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(novoCarro)
-                }).then(response => {
-                    if (!response.ok) {
-                        alert("PRISMA JÁ SOLICITADO");
-                    } else {
-                        limparFormulario();
-                        solicitarAtualizacaoDados();
-                    }
-                }).catch(erro => {
-                    alert("Erro ao enviar pedido. Verifique sua conexão.");
-                });
-            } catch(e) { console.error(e); }
+            });
         }
 
         function darBaixa(id) {
-            try {
-                let dadosBaixa = {
-                    id: id,
-                    timestamp_baixa: Date.now(),
-                    hora_baixa: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                };
+            let dadosBaixa = {
+                id: id,
+                timestamp_baixa: Date.now(),
+                hora_baixa: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            };
 
-                fetch('/api/baixa', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dadosBaixa)
-                }).then(() => {
-                    solicitarAtualizacaoDados();
-                }).catch(erro => {
-                    console.error("Erro na baixa:", erro);
-                });
-            } catch(e) { console.error(e); }
+            fetch('/api/baixa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosBaixa)
+            }).then(() => {
+                solicitarAtualizacaoDados();
+            });
         }
 
         function solicitarAtualizacaoDados() {
             fetch('/api/dados')
-                .then(response => {
-                    if (!response.ok) throw new Error("Erro na rede");
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(dados => {
                     tempoMedioAtualMs = dados.tempo_medio;
+                    
                     if (perfilAtual === 'solicitacoes') renderizarSolicitacoes(dados.fila);
                     if (perfilAtual === 'painel') renderizarPainel(dados);
-                })
-                .catch(erro => {
-                    console.log("Aguardando servidor ou erro de conexão...");
                 });
         }
 
         function renderizarSolicitacoes(fila) {
-            try {
-                const listaDiv = document.getElementById("lista-fila");
-                listaDiv.innerHTML = "";
+            const listaDiv = document.getElementById("lista-fila");
+            listaDiv.innerHTML = "";
+            
+            if (!fila || fila.length === 0) {
+                listaDiv.innerHTML = "<p style='color: #888;'>Nenhum veículo na fila.</p>";
+                return;
+            }
+
+            const agora = Date.now();
+
+            fila.forEach((carro, index) => {
+                const tempoDecorridoMs = agora - carro.id;
                 
-                if (!fila || fila.length === 0) {
-                    listaDiv.innerHTML = "<p style='color: #888;'>Nenhum veículo na fila.</p>";
-                    return;
+                let classeAlerta = "";
+                if (tempoDecorridoMs > tempoMedioAtualMs) {
+                    classeAlerta = "alerta-atraso";
                 }
 
-                const agora = Date.now();
-
-                fila.forEach((carro, index) => {
-                    const tempoDecorridoMs = agora - carro.id;
-                    let classeAlerta = "";
-                    if (tempoDecorridoMs > tempoMedioAtualMs) {
-                        classeAlerta = "alerta-atraso";
-                    }
-
-                    listaDiv.innerHTML += `
-                        <div class="item-fila ${classeAlerta}">
-                            <div class="item-header">
-                                <span><strong>${index + 1}º</strong> - Prisma: <strong>${carro.prisma}</strong></span>
-                                <span style="color:var(--info);">${carro.hora_solicitacao}</span>
-                            </div>
-                            <div class="item-dados">
-                                Placa: ${carro.placa || 'N/A'} | Modelo: ${carro.modelo || 'N/A'}
-                            </div>
-                            <button class="btn-baixa" onclick="darBaixa(${carro.id})">BAIXA</button>
+                listaDiv.innerHTML += `
+                    <div class="item-fila ${classeAlerta}">
+                        <div class="item-header">
+                            <span><strong>${index + 1}º</strong> - Prisma: <strong>${carro.prisma}</strong></span>
+                            <span style="color:var(--info);">${carro.hora_solicitacao}</span>
                         </div>
-                    `;
-                });
-            } catch(e) { console.error(e); }
+                        <div class="item-dados">
+                            Placa: ${carro.placa || 'N/A'} | Modelo: ${carro.modelo || 'N/A'}
+                        </div>
+                        <button class="btn-baixa" onclick="darBaixa(${carro.id})">BAIXA</button>
+                    </div>
+                `;
+            });
         }
 
         function formatarTempo(ms) {
@@ -296,17 +290,72 @@
         }
 
         function renderizarPainel(dados) {
-            try {
-                document.getElementById("display-tempo-medio").innerText = formatarTempo(dados.tempo_medio);
+            document.getElementById("display-tempo-medio").innerText = formatarTempo(dados.tempo_medio);
 
-                const colSolicitacoes = document.getElementById("painel-col-solicitacoes");
-                colSolicitacoes.innerHTML = "";
-                if (dados.fila.length === 0) {
-                    colSolicitacoes.innerHTML = "<p style='color:#666; text-align:center;'>Vazio</p>";
-                } else {
-                    dados.fila.forEach((carro) => {
-                        colSolicitacoes.innerHTML += `
-                            <div class="item-fila" style="padding:10px;">
-                                <strong>Prisma: ${carro.prisma}</strong>
-                                <div class="item-dados" style="font-size:0.9rem;">
-                                    Placa: ${
+            const colSolicitacoes = document.getElementById("painel-col-solicitacoes");
+            colSolicitacoes.innerHTML = "";
+            if (dados.fila.length === 0) {
+                colSolicitacoes.innerHTML = "<p style='color:#666;'>Vazio</p>";
+            } else {
+                dados.fila.forEach((carro) => {
+                    colSolicitacoes.innerHTML += `
+                        <div class="item-fila" style="padding:10px;">
+                            <strong>Prisma: ${carro.prisma}</strong>
+                            <div class="item-dados" style="font-size:0.9rem;">Placa: ${carro.placa || 'N/A'} | Solicitado: ${carro.hora_solicitacao}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            const colPercurso = document.getElementById("painel-col-percurso");
+            colPercurso.innerHTML = "";
+            if (dados.historico.length === 0) {
+                colPercurso.innerHTML = "<p style='color:#666;'>Vazio</p>";
+            } else {
+                dados.historico.forEach((carro) => {
+                    colPercurso.innerHTML += `
+                        <div class="item-fila" style="padding:10px; border-left: 5px solid var(--primary);">
+                            <strong>Prisma: ${carro.prisma}</strong>
+                            <div class="item-dados" style="font-size:0.8rem;">
+                                Placa: ${carro.placa || 'N/A'}<br>
+                                Solicitado: ${carro.hora_solicitacao} | Baixa: <span style="color:var(--primary);">${carro.hora_baixa}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function mudarPerfil(perfil) {
+            perfilAtual = perfil;
+            
+            document.getElementById("btn-caixa").classList.remove("active");
+            document.getElementById("btn-solicitacoes").classList.remove("active");
+            document.getElementById("btn-painel").classList.remove("active");
+
+            document.getElementById("tela-caixa").classList.add("hidden");
+            document.getElementById("tela-solicitacoes").classList.add("hidden");
+            document.getElementById("tela-painel").classList.add("hidden");
+
+            if (perfil === 'caixa') {
+                document.getElementById("btn-caixa").classList.add("active");
+                document.getElementById("tela-caixa").classList.remove("hidden");
+            } else if (perfil === 'solicitacoes') {
+                document.getElementById("btn-solicitacoes").classList.add("active");
+                document.getElementById("tela-solicitacoes").classList.remove("hidden");
+                solicitarAtualizacaoDados();
+            } else if (perfil === 'painel') {
+                document.getElementById("btn-painel").classList.add("active");
+                document.getElementById("tela-painel").classList.remove("hidden");
+                solicitarAtualizacaoDados();
+            }
+        }
+
+        setInterval(() => {
+            if (perfilAtual === 'solicitacoes' || perfilAtual === 'painel') {
+                solicitarAtualizacaoDados();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
