@@ -50,10 +50,10 @@
         .btn-baixa { background: var(--danger); font-size: 1.1rem; padding: 10px 20px; align-self: flex-end; margin-top: 10px;}
 
         /* Colunas do Painel do Cliente */
-        .painel-header-box { background: var(--info); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; }
+        .painel-header-box { background: var(--info); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; text-align: center; }
         .painel-grid { display: flex; gap: 20px; }
         .painel-coluna { flex: 1; background: #222; padding: 15px; border-radius: 10px; }
-        .painel-coluna h3 { margin-top: 0; color: var(--warning); border-bottom: 2px solid #444; padding-bottom: 10px;}
+        .painel-coluna h3 { margin-top: 0; color: var(--warning); border-bottom: 2px solid #444; padding-bottom: 10px; text-align: center;}
         
         /* ALERTA PISCANDO EM VERMELHO */
         .alerta-atraso { animation: piscarVermelho 1s infinite alternate; border: 2px solid #ff0000; }
@@ -90,11 +90,10 @@
         
         <div class="form-grupo">
             <input type="text" id="input-placa" placeholder="Placa (Ex: ABC1234)" style="text-transform: uppercase;">
-            
             <input type="text" id="input-modelo" list="lista-modelos" placeholder="Modelo do Carro" style="text-transform: uppercase;">
             
             <datalist id="lista-modelos">
-                <option value="ACCORD">
+             <option value="ACCORD">
                 <option value="AUDI">
                 <option value="OUTROS">
                 <option value="IMPORTADO">
@@ -322,6 +321,7 @@
 <option value="Z4">
 <option value="ZAFIRA">
 <option value="ZR-V">
+
             </datalist>
 
             <input type="text" id="input-prisma" placeholder="Nº do Prisma">
@@ -374,6 +374,7 @@
             console.log("Botão reservado para o futuro.");
         }
 
+        // Sistema para entrar em tela cheia de forma limpa
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(e => {});
@@ -475,7 +476,6 @@
                         <div class="item-dados">
                             Placa: ${carro.placa || 'N/A'} | Modelo: ${carro.modelo || 'N/A'}
                         </div>
-                        <button class="btn-baixa" onclick="darBaixa(${carro.id})">BAIXA</button>
                     </div>
                 `;
             });
@@ -489,32 +489,37 @@
         function renderizarPainel(dados) {
             document.getElementById("display-tempo-medio").innerText = formatarTempo(dados.tempo_medio);
 
+            // Coluna 1: Solicitações (Fila) - AGORA COM MODELO INCLUÍDO
             const colSolicitacoes = document.getElementById("painel-col-solicitacoes");
             colSolicitacoes.innerHTML = "";
             if (dados.fila.length === 0) {
-                colSolicitacoes.innerHTML = "<p style='color:#666;'>Vazio</p>";
+                colSolicitacoes.innerHTML = "<p style='color:#666; text-align:center;'>Vazio</p>";
             } else {
                 dados.fila.forEach((carro) => {
                     colSolicitacoes.innerHTML += `
                         <div class="item-fila" style="padding:10px;">
                             <strong>Prisma: ${carro.prisma}</strong>
-                            <div class="item-dados" style="font-size:0.9rem;">Placa: ${carro.placa || 'N/A'} | Solicitado: ${carro.hora_solicitacao}</div>
+                            <div class="item-dados" style="font-size:0.9rem;">
+                                Placa: ${carro.placa || 'N/A'} | Modelo: ${carro.modelo || 'N/A'}<br>
+                                Solicitado às: <span style="color:var(--info);">${carro.hora_solicitacao}</span>
+                            </div>
                         </div>
                     `;
                 });
             }
 
+            // Coluna 2: Percurso (Histórico) - AGORA COM MODELO INCLUÍDO
             const colPercurso = document.getElementById("painel-col-percurso");
             colPercurso.innerHTML = "";
             if (dados.historico.length === 0) {
-                colPercurso.innerHTML = "<p style='color:#666;'>Vazio</p>";
+                colPercurso.innerHTML = "<p style='color:#666; text-align:center;'>Vazio</p>";
             } else {
                 dados.historico.forEach((carro) => {
                     colPercurso.innerHTML += `
                         <div class="item-fila" style="padding:10px; border-left: 5px solid var(--primary);">
                             <strong>Prisma: ${carro.prisma}</strong>
                             <div class="item-dados" style="font-size:0.8rem;">
-                                Placa: ${carro.placa || 'N/A'}<br>
+                                Placa: ${carro.placa || 'N/A'} | Modelo: ${carro.modelo || 'N/A'}<br>
                                 Solicitado: ${carro.hora_solicitacao} | Baixa: <span style="color:var(--primary);">${carro.hora_baixa}</span>
                             </div>
                         </div>
