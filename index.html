@@ -24,7 +24,7 @@
         .logo-estapar { width: 250px; height: auto; display: block; }
 
         .container { width: 100%; max-width: 600px; background: var(--card-bg); padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); text-align: center; margin-bottom: 20px; box-sizing: border-box; }
-        .container-painel { max-width: 900px; } /* Painel é mais largo para as 2 colunas */
+        .container-painel { max-width: 900px; }
 
         /* Formulário do Caixa */
         .form-grupo { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
@@ -90,7 +90,217 @@
         
         <div class="form-grupo">
             <input type="text" id="input-placa" placeholder="Placa (Ex: ABC1234)" style="text-transform: uppercase;">
-            <input type="text" id="input-modelo" placeholder="Modelo do Carro" style="text-transform: uppercase;">
+            
+            <input type="text" id="input-modelo" list="lista-modelos" placeholder="Modelo do Carro" style="text-transform: uppercase;">
+            
+            <datalist id="lista-modelos">
+                <option value="ACCORD">
+<option value="AGILE">
+<option value="AMAROK">
+<option value="ARGO">
+<option value="ASTRA">
+<option value="AUDI A3">
+<option value="AUDI A4">
+<option value="AUDI A5">
+<option value="AUDI Q3">
+<option value="AUDI Q5">
+<option value="AZERA">
+<option value="BANDEIRANTE">
+<option value="BLAZER">
+<option value="BONGO">
+<option value="BORA">
+<option value="BOXSTER">
+<option value="BRONCO">
+<option value="C3">
+<option value="C3 AIRCROSS">
+<option value="C4 CACTUS">
+<option value="C4 LOUNGE">
+<option value="C4 PICASSO">
+<option value="CAMARO">
+<option value="CAMRY">
+<option value="CAPTIVA">
+<option value="CAPTUR">
+<option value="CELTA">
+<option value="CERATO">
+<option value="CHEROKEE">
+<option value="CITY">
+<option value="CIVIC">
+<option value="CLIO">
+<option value="COBALT">
+<option value="COMMANDER">
+<option value="COMPASS">
+<option value="COOPER">
+<option value="COROLLA">
+<option value="COROLLA CROSS">
+<option value="CORSA">
+<option value="CRETA">
+<option value="CRONOS">
+<option value="CRUZE">
+<option value="DEFENDER">
+<option value="DISCOVERY">
+<option value="DOBLO">
+<option value="DOLPHIN">
+<option value="DOLPHIN MINI">
+<option value="DUCATO">
+<option value="DUSTER">
+<option value="ECLIPSE CROSS">
+<option value="ECOSPORT">
+<option value="EDGE">
+<option value="ELANTRA">
+<option value="EQUINOX">
+<option value="ESCORT">
+<option value="ETIOS">
+<option value="EVOQUE">
+<option value="EXPERT">
+<option value="FASTBACK">
+<option value="FIESTA">
+<option value="FIORINO">
+<option value="FIT">
+<option value="FLUENCE">
+<option value="FOCUS">
+<option value="FORESTER">
+<option value="FOX">
+<option value="FRONTIER">
+<option value="FUSION">
+<option value="GOL">
+<option value="GOLF">
+<option value="GRAND CHEROKEE">
+<option value="GRAND SIENA">
+<option value="GRAND VITARA">
+<option value="HAVAL H6">
+<option value="HB20">
+<option value="HB20S">
+<option value="HB20X">
+<option value="HILUX">
+<option value="HR">
+<option value="HR-V">
+<option value="I30">
+<option value="IDEA">
+<option value="IMPREZA">
+<option value="JETTA">
+<option value="JIMNY">
+<option value="JOURNEY">
+<option value="JUMPER">
+<option value="JUMPY">
+<option value="KA">
+<option value="KANGOO">
+<option value="KICKS">
+<option value="KOMBI">
+<option value="KWID">
+<option value="L200">
+<option value="LANCER">
+<option value="LEAF">
+<option value="LEGACY">
+<option value="LINEA">
+<option value="LIVINA">
+<option value="LOGAN">
+<option value="MACAN">
+<option value="MARCH">
+<option value="MASTER">
+<option value="MAVERICK">
+<option value="MEGANE">
+<option value="MERIVA">
+<option value="MOBI">
+<option value="MONTANA">
+<option value="MUSTANG">
+<option value="NIVUS">
+<option value="NX">
+<option value="ONIX">
+<option value="ONIX PLUS">
+<option value="ORA 03">
+<option value="OROCH">
+<option value="OUTBACK">
+<option value="OUTLANDER">
+<option value="PAJERO">
+<option value="PALIO">
+<option value="PANAMERA">
+<option value="PARATI">
+<option value="PARTNER">
+<option value="PASSAT">
+<option value="PEUGEOT 206">
+<option value="PEUGEOT 207">
+<option value="PEUGEOT 208">
+<option value="PEUGEOT 2008">
+<option value="PEUGEOT 3008">
+<option value="PEUGEOT 308">
+<option value="PICANTO">
+<option value="POLO">
+<option value="PRISMA">
+<option value="PRIUS">
+<option value="PULSE">
+<option value="PUNTO">
+<option value="QUANTUM">
+<option value="QQ">
+<option value="RAMPAGE">
+<option value="RANGER">
+<option value="RAV4">
+<option value="RENEGADE">
+<option value="S-CROSS">
+<option value="S10">
+<option value="SANDERO">
+<option value="SANTA FE">
+<option value="SANTANA">
+<option value="SAVEIRO">
+<option value="SCENIC">
+<option value="SEAL">
+<option value="SENTRA">
+<option value="SIENA">
+<option value="SONATA">
+<option value="SONG PLUS">
+<option value="SORENTO">
+<option value="SOUL">
+<option value="SPACEFOX">
+<option value="SPIN">
+<option value="SPORTAGE">
+<option value="SPRINTER">
+<option value="STEPWAY">
+<option value="STILO">
+<option value="STRADA">
+<option value="SW4">
+<option value="T-CROSS">
+<option value="TAOS">
+<option value="TAYCAN">
+<option value="TERRITORY">
+<option value="TIGGO 2">
+<option value="TIGGO 3X">
+<option value="TIGGO 5X">
+<option value="TIGGO 7">
+<option value="TIGGO 8">
+<option value="TIGUAN">
+<option value="TIIDA">
+<option value="TORO">
+<option value="TOWN & COUNTRY">
+<option value="TRACKER">
+<option value="TRAILBLAZER">
+<option value="TRITON">
+<option value="TUCSON">
+<option value="UNO">
+<option value="UP">
+<option value="UX">
+<option value="VECTRA">
+<option value="VELAR">
+<option value="VELOSTER">
+<option value="VERACRUZ">
+<option value="VERSA">
+<option value="VIRTUS">
+<option value="VITARA">
+<option value="VOYAGE">
+<option value="WR-V">
+<option value="WRANGLER">
+<option value="X1">
+<option value="X3">
+<option value="X5">
+<option value="XC40">
+<option value="XC60">
+<option value="XC90">
+<option value="XSARA PICASSO">
+<option value="YARIS">
+<option value="YUAN PLUS">
+<option value="Z4">
+<option value="ZAFIRA">
+<option value="ZR-V">
+            </datalist>
+
             <input type="text" id="input-prisma" placeholder="Nº do Prisma">
         </div>
 
@@ -132,9 +342,8 @@
 
     <script>
         let perfilAtual = "caixa"; 
-        let tempoMedioAtualMs = 600000; // Inicia com 10 min de tolerância caso não haja histórico
+        let tempoMedioAtualMs = 600000; 
 
-        // Funções dos botões do Caixa
         function botaoPsPressionado() {
             document.getElementById("input-prisma").value = "PS";
         }
@@ -204,7 +413,6 @@
             });
         }
 
-        // UNIFICADO: Puxa Fila, Percurso e Tempo Médio de uma vez só!
         function solicitarAtualizacaoDados() {
             fetch('/api/dados')
                 .then(response => response.json())
@@ -230,7 +438,6 @@
             fila.forEach((carro, index) => {
                 const tempoDecorridoMs = agora - carro.id;
                 
-                // Se o carro está esperando MAIS do que o TEMPO MÉDIO atual do painel, ele pisca!
                 let classeAlerta = "";
                 if (tempoDecorridoMs > tempoMedioAtualMs) {
                     classeAlerta = "alerta-atraso";
@@ -257,10 +464,8 @@
         }
 
         function renderizarPainel(dados) {
-            // Atualiza a caixa de tempo médio
             document.getElementById("display-tempo-medio").innerText = formatarTempo(dados.tempo_medio);
 
-            // Coluna 1: Solicitações (Fila)
             const colSolicitacoes = document.getElementById("painel-col-solicitacoes");
             colSolicitacoes.innerHTML = "";
             if (dados.fila.length === 0) {
@@ -276,7 +481,6 @@
                 });
             }
 
-            // Coluna 2: Percurso (Histórico)
             const colPercurso = document.getElementById("painel-col-percurso");
             colPercurso.innerHTML = "";
             if (dados.historico.length === 0) {
@@ -321,7 +525,6 @@
             }
         }
 
-        // Sincronizador inteligente
         setInterval(() => {
             if (perfilAtual === 'solicitacoes' || perfilAtual === 'painel') {
                 solicitarAtualizacaoDados();
