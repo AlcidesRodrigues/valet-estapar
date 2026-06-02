@@ -35,11 +35,22 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Acesso Negado.")
             return False
 
+    # ========================================================
+    # NOVA FUNÇÃO: ENSINANDO O SERVIDOR A FALAR COM O ROBÔ (HEAD)
+    # ========================================================
+    def do_HEAD(self):
+        if self.path == '/api/ping':
+            self.send_response(200)
+            self.end_headers()
+            return
+        self.send_response(404)
+        self.end_headers()
+
     def do_GET(self):
         global fila_veiculos, historico_veiculos
         diretorio_atual = os.path.dirname(os.path.abspath(__file__))
         
-        # ROTA PÚBLICA PARA O ROBÔ
+        # ROTA PÚBLICA PARA O ROBÔ (GET normal, caso precise no futuro)
         if self.path == '/api/ping':
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
