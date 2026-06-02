@@ -20,6 +20,10 @@ AUTH_ESPERADO = f"Basic {CHAVE_AUTH}"
 
 class ServidorFilaHandler(BaseHTTPRequestHandler):
     
+    def log_message(self, format, *args):
+        # Desativa os logs de acesso que poluem o painel do Render
+        pass
+
     def verificar_autenticacao(self):
         auth_header = self.headers.get('Authorization')
         if auth_header == AUTH_ESPERADO:
@@ -35,7 +39,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         global fila_veiculos, historico_veiculos
         diretorio_atual = os.path.dirname(os.path.abspath(__file__))
         
-        # ROTA PÚBLICA PARA O ROBÔ (Não precisa de senha)
+        # ROTA PÚBLICA PARA O ROBÔ
         if self.path == '/api/ping':
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
@@ -47,10 +51,10 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         if not self.verificar_autenticacao():
             return
         
-        # NOVA ROTA UNIFICADA DE DADOS COM CÁLCULO DE MÉDIA
+        # ROTA UNIFICADA DE DADOS E MÉDIA
         if self.path == '/api/dados':
             tempos = [c.get("tempo_espera_ms", 0) for c in historico_veiculos if "tempo_espera_ms" in c]
-            tempo_medio = sum(tempos) / len(tempos) if tempos else 600000 # 10 minutos em milissegundos padrão
+            tempo_medio = sum(tempos) / len(tempos) if tempos else 600000
             
             resposta = {
                 "fila": fila_veiculos,
@@ -110,7 +114,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
                 "placa": str(dados.get("placa", "")).strip().upper(),
                 "modelo": str(dados.get("modelo", "")).strip().upper(),
                 "prisma": prisma_solicitado,
-                "hora_solicitacao": dados["hora_solicitacao"]
+                "hora_solicitacao": dados.get("hora_solicitacao", "")
             }
             fila_veiculos.append(novo_carro)
             
@@ -121,9 +125,8 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         elif self.path == '/api/baixa':
             carro_id = dados.get("id")
             hora_baixa = dados.get("hora_baixa")
-            timestamp_baixa = dados.get("timestamp_baixa")
+            timestamp_baixa = dados.get("timestamp_baixa", 0)
             
-            # Encontra o carro, calcula o tempo e move para o percurso
             carro_alvo = next((c for c in fila_veiculos if c["id"] == carro_id), None)
             
             if carro_alvo:
@@ -133,8 +136,6 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
                 historico_veiculos.insert(0, carro_alvo)
                 historico_veiculos = historico_veiculos[:20] 
                 
-                # Remove da fila de solicitações
-                global fila_veiculos
                 fila_veiculos = [c for c in fila_veiculos if c["id"] != carro_id]
 
             self.send_response(200)
@@ -145,7 +146,7 @@ def run():
     porta = int(os.environ.get('PORT', 8080))
     server_address = ('0.0.0.0', porta) 
     httpd = HTTPServer(server_address, ServidorFilaHandler)
-    print(f"SERVIDOR NA NUVEM NA PORTA {porta}")
+    print(f"SERVIDOR INICIADO COM SUCESSO NA PORTA {porta}")
     httpd.serve_forever()
 
 if __name__ == '__main__':
