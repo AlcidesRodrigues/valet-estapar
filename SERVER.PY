@@ -14,8 +14,9 @@ historico_veiculos = []
 USUARIOS = {
     "estapar": "123",   # Acesso Total
     "caixa": "123",     # Acesso Caixa + Solicitações
-    "operador": "123",  # Acesso só Solicitações
-    "operador2": "123"  # Acesso só Painel Cliente
+    "caixa1": "123",    # Acesso APENAS Caixa
+    "operador": "123",  # Acesso APENAS Solicitações
+    "operador2": "123"  # Acesso APENAS Painel Cliente
 }
 # ========================================================
 
@@ -24,7 +25,6 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
-    # Função que descobre quem está acessando agora
     def get_usuario_autenticado(self):
         auth_header = self.headers.get('Authorization')
         if auth_header and auth_header.startswith('Basic '):
@@ -37,7 +37,6 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
                 return None
         return None
 
-    # Função que verifica se o login e a senha batem com a nossa lista
     def verificar_autenticacao(self):
         auth_header = self.headers.get('Authorization')
         if auth_header and auth_header.startswith('Basic '):
@@ -70,7 +69,6 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         global fila_veiculos, historico_veiculos
         diretorio_atual = os.path.dirname(os.path.abspath(__file__))
         
-        # ROTA PÚBLICA PARA O ROBÔ
         if self.path == '/api/ping':
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
@@ -78,11 +76,9 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"PONG")
             return
 
-        # CADEADO DE SEGURANÇA
         if not self.verificar_autenticacao():
             return
             
-        # NOVA ROTA: PERGUNTA AO SERVIDOR QUEM SOU EU?
         if self.path == '/api/perfil':
             usuario = self.get_usuario_autenticado()
             self.send_response(200)
@@ -91,7 +87,6 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"usuario": usuario}).encode('utf-8'))
             return
         
-        # ROTA DE DADOS
         if self.path == '/api/dados':
             tempos = [c.get("tempo_espera_ms", 0) for c in historico_veiculos if "tempo_espera_ms" in c]
             tempo_medio = sum(tempos) / len(tempos) if tempos else 600000
