@@ -11,7 +11,7 @@
     
     <title>Gerenciador de Fila - Valet</title>
     
-    <link rel="icon" type="image/png" href="ESTAPAR-16.png">
+    <link rel="icon" type="image/png" href="ESTAPAR-04.png">
     <link rel="apple-touch-icon" href="ESTAPAR-04.png">
     
     <style>
@@ -26,7 +26,6 @@
         .container { width: 100%; max-width: 600px; background: var(--card-bg); padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); text-align: center; margin-bottom: 20px; box-sizing: border-box; }
         .container-painel { max-width: 900px; }
 
-        /* Formulário do Caixa */
         .form-grupo { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
         .form-grupo input { padding: 15px; font-size: 1.5rem; border-radius: 10px; border: 1px solid #444; background: #000; color: var(--primary); text-align: center; font-weight: bold; }
         .form-grupo input::placeholder { color: #555; font-weight: normal; }
@@ -42,14 +41,12 @@
         .btn-ps { background: var(--info); }
         .btn-futuro { background: #262626; color: #666; }
 
-        /* Listas e Painel */
         .item-fila { display: flex; flex-direction: column; background: #2a2a2a; padding: 15px; margin: 10px 0; border-radius: 10px; text-align: left; font-size: 1.2rem; transition: 0.3s; }
         .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 1.4rem;}
         .item-dados { color: #aaa; font-size: 1rem; }
         
         .btn-baixa { background: var(--danger); font-size: 1.1rem; padding: 10px 20px; align-self: flex-end; margin-top: 10px;}
 
-        /* Colunas do Painel do Cliente */
         .painel-header-box { background: var(--info); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; text-align: center; }
         .painel-grid { display: flex; gap: 20px; }
         .painel-coluna { flex: 1; background: #222; padding: 15px; border-radius: 10px; }
@@ -58,7 +55,6 @@
         .alerta-atraso { animation: piscarVermelho 1s infinite alternate; border: 2px solid #ff0000; }
         @keyframes piscarVermelho { 0% { background-color: #2a2a2a; } 100% { background-color: #630000; } }
 
-        /* Abas Superiores */
         .view-toggle { margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 900px;}
         .btn-aba { flex: 1; min-width: 120px; padding: 15px 20px; background: #3c3c3c; color: #aaaaaa; opacity: 0.8; font-weight: normal; }
         .btn-aba.active { background: var(--info); color: #ffffff; opacity: 1; font-weight: bold; box-shadow: 0 0 10px rgba(33, 150, 243, 0.5); }
@@ -79,12 +75,12 @@
     </div>
 
     <div class="view-toggle">
-        <button id="btn-caixa" class="btn-aba active" onclick="mudarPerfil('caixa')">CAIXA</button>
-        <button id="btn-solicitacoes" class="btn-aba" onclick="mudarPerfil('solicitacoes')">SOLICITAÇÕES</button>
-        <button id="btn-painel" class="btn-aba" onclick="mudarPerfil('painel')">PAINEL (CLIENTE)</button>
+        <button id="btn-caixa" class="btn-aba" style="display: none;" onclick="mudarPerfil('caixa')">CAIXA</button>
+        <button id="btn-solicitacoes" class="btn-aba" style="display: none;" onclick="mudarPerfil('solicitacoes')">SOLICITAÇÕES</button>
+        <button id="btn-painel" class="btn-aba" style="display: none;" onclick="mudarPerfil('painel')">PAINEL (CLIENTE)</button>
     </div>
 
-    <div id="tela-caixa" class="container">
+    <div id="tela-caixa" class="container hidden">
         <h2>SOLICITAR VEÍCULO</h2>
         
         <div class="form-grupo">
@@ -93,7 +89,6 @@
             
             <datalist id="lista-modelos">
                 <option value="AUDI">
-                <option value="BASALT"
                 <option value="BMW">
                 <option value="BYD">
                 <option value="CAOA CHERY">
@@ -156,10 +151,58 @@
     </div>
 
     <script>
-        // TOTALMENTE TRADUZIDO PARA JAVASCRIPT ANTIGO (ES5) PARA IPAD IOS 9
-        var perfilAtual = "caixa"; 
+        var perfilAtual = ""; 
         var tempoMedioAtualMs = 600000; 
 
+        // ==========================================
+        // SISTEMA DE PERMISSÕES E LOGIN
+        // ==========================================
+        function configurarAcessos() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/api/perfil", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var res = JSON.parse(xhr.responseText);
+                    var usuario = res.usuario ? res.usuario.toLowerCase() : "";
+
+                    var btnCaixa = document.getElementById("btn-caixa");
+                    var btnSolicitacoes = document.getElementById("btn-solicitacoes");
+                    var btnPainel = document.getElementById("btn-painel");
+
+                    // Verifica qual usuário logou e libera as abas correspondentes
+                    if (usuario === "estapar") {
+                        btnCaixa.style.display = "";
+                        btnSolicitacoes.style.display = "";
+                        btnPainel.style.display = "";
+                        mudarPerfil("caixa");
+
+                    } else if (usuario === "caixa") {
+                        btnCaixa.style.display = "";
+                        btnSolicitacoes.style.display = "";
+                        mudarPerfil("caixa");
+
+                    } else if (usuario === "operador") {
+                        btnSolicitacoes.style.display = "";
+                        mudarPerfil("solicitacoes");
+
+                    } else if (usuario === "operador2") {
+                        btnPainel.style.display = "";
+                        mudarPerfil("painel");
+
+                    } else {
+                        // Por precaução, se der erro, joga pro Caixa
+                        btnCaixa.style.display = "";
+                        mudarPerfil("caixa");
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        // Executar as permissões assim que a página abrir
+        window.onload = configurarAcessos;
+
+        // Funções da Interface
         function botaoPsPressionado() {
             try { document.getElementById("input-prisma").value = "PS"; } catch(e) {}
         }
@@ -278,7 +321,6 @@
                         classeAlerta = "alerta-atraso";
                     }
 
-                    // Formatado sem crases para o iOS antigo aceitar
                     listaDiv.innerHTML += 
                         "<div class='item-fila " + classeAlerta + "'>" +
                             "<div class='item-header'>" +
