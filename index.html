@@ -169,7 +169,6 @@
                     var btnSolicitacoes = document.getElementById("btn-solicitacoes");
                     var btnPainel = document.getElementById("btn-painel");
 
-                    // Verifica qual usuário logou e libera as abas correspondentes
                     if (usuario === "estapar") {
                         btnCaixa.style.display = "";
                         btnSolicitacoes.style.display = "";
@@ -181,6 +180,11 @@
                         btnSolicitacoes.style.display = "";
                         mudarPerfil("caixa");
 
+                    } else if (usuario === "caixa1") {
+                        // Novo usuário adicionado: Somente caixa
+                        btnCaixa.style.display = "";
+                        mudarPerfil("caixa");
+
                     } else if (usuario === "operador") {
                         btnSolicitacoes.style.display = "";
                         mudarPerfil("solicitacoes");
@@ -190,7 +194,6 @@
                         mudarPerfil("painel");
 
                     } else {
-                        // Por precaução, se der erro, joga pro Caixa
                         btnCaixa.style.display = "";
                         mudarPerfil("caixa");
                     }
@@ -199,10 +202,8 @@
             xhr.send();
         }
 
-        // Executar as permissões assim que a página abrir
         window.onload = configurarAcessos;
 
-        // Funções da Interface
         function botaoPsPressionado() {
             try { document.getElementById("input-prisma").value = "PS"; } catch(e) {}
         }
