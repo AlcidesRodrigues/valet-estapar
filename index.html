@@ -77,7 +77,7 @@
     <div class="view-toggle">
         <button id="btn-caixa" class="btn-aba" style="display: none;" onclick="mudarPerfil('caixa')">CAIXA</button>
         <button id="btn-solicitacoes" class="btn-aba" style="display: none;" onclick="mudarPerfil('solicitacoes')">SOLICITAÇÕES</button>
-        <button id="btn-painel" class="btn-aba" style="display: none;" onclick="mudarPerfil('painel')">PAINEL (CLIENTE)</button>
+        <button id="btn-painel" class="btn-aba" style="display: none;" onclick="mudarPerfil('painel')">PAINEL</button>
     </div>
 
     <div id="tela-caixa" class="container hidden">
@@ -134,7 +134,7 @@
 
     <div id="tela-painel" class="container container-painel hidden">
         <div class="painel-header-box">
-            TEMPO MÉDIO DE ESPERA: <span id="display-tempo-medio">Calculando...</span>
+            TEMPO MÉDIO ATENDIMENTO (TMA): <span id="display-tempo-medio">Calculando...</span>
         </div>
         
         <div class="painel-grid">
@@ -144,7 +144,7 @@
             </div>
             
             <div class="painel-coluna">
-                <h3>PERCURSO (Últimos 20)</h3>
+                <h3>EM MANOBRA (Últimos 20)</h3>
                 <div id="painel-col-percurso"></div>
             </div>
         </div>
@@ -181,7 +181,6 @@
                         mudarPerfil("caixa");
 
                     } else if (usuario === "caixa1") {
-                        // Novo usuário adicionado: Somente caixa
                         btnCaixa.style.display = "";
                         mudarPerfil("caixa");
 
