@@ -9,35 +9,55 @@ fila_veiculos = []
 historico_veiculos = [] 
 
 # ========================================================
-# 🔒 CONFIGURAÇÃO DE ACESSO (USUÁRIO E SENHA)
+# 🔒 CONFIGURAÇÃO DE ACESSOS (NÍVEIS DE USUÁRIO)
 # ========================================================
-USUARIO = "estapar"
-SENHA = "123"
+USUARIOS = {
+    "estapar": "123",   # Acesso Total
+    "caixa": "123",     # Acesso Caixa + Solicitações
+    "operador": "123",  # Acesso só Solicitações
+    "operador2": "123"  # Acesso só Painel Cliente
+}
 # ========================================================
-
-CHAVE_AUTH = base64.b64encode(f"{USUARIO}:{SENHA}".encode('utf-8')).decode('utf-8')
-AUTH_ESPERADO = f"Basic {CHAVE_AUTH}"
 
 class ServidorFilaHandler(BaseHTTPRequestHandler):
     
     def log_message(self, format, *args):
-        # Desativa os logs de acesso que poluem o painel do Render
         pass
 
+    # Função que descobre quem está acessando agora
+    def get_usuario_autenticado(self):
+        auth_header = self.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Basic '):
+            try:
+                encoded_credentials = auth_header.split(' ')[1]
+                decoded_credentials = base64.b64decode(encoded_credentials).decode('utf-8')
+                username, _ = decoded_credentials.split(':', 1)
+                return username.lower()
+            except:
+                return None
+        return None
+
+    # Função que verifica se o login e a senha batem com a nossa lista
     def verificar_autenticacao(self):
         auth_header = self.headers.get('Authorization')
-        if auth_header == AUTH_ESPERADO:
-            return True
-        else:
-            self.send_response(401)
-            self.send_header('WWW-Authenticate', 'Basic realm="Acesso Restrito"')
-            self.end_headers()
-            self.wfile.write(b"Acesso Negado.")
-            return False
+        if auth_header and auth_header.startswith('Basic '):
+            try:
+                encoded_credentials = auth_header.split(' ')[1]
+                decoded_credentials = base64.b64decode(encoded_credentials).decode('utf-8')
+                username, password = decoded_credentials.split(':', 1)
+                username = username.lower()
+                
+                if username in USUARIOS and USUARIOS[username] == password:
+                    return True
+            except:
+                pass
 
-    # ========================================================
-    # NOVA FUNÇÃO: ENSINANDO O SERVIDOR A FALAR COM O ROBÔ (HEAD)
-    # ========================================================
+        self.send_response(401)
+        self.send_header('WWW-Authenticate', 'Basic realm="Acesso Restrito"')
+        self.end_headers()
+        self.wfile.write(b"Acesso Negado.")
+        return False
+
     def do_HEAD(self):
         if self.path == '/api/ping':
             self.send_response(200)
@@ -50,7 +70,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         global fila_veiculos, historico_veiculos
         diretorio_atual = os.path.dirname(os.path.abspath(__file__))
         
-        # ROTA PÚBLICA PARA O ROBÔ (GET normal, caso precise no futuro)
+        # ROTA PÚBLICA PARA O ROBÔ
         if self.path == '/api/ping':
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
@@ -61,8 +81,17 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         # CADEADO DE SEGURANÇA
         if not self.verificar_autenticacao():
             return
+            
+        # NOVA ROTA: PERGUNTA AO SERVIDOR QUEM SOU EU?
+        if self.path == '/api/perfil':
+            usuario = self.get_usuario_autenticado()
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"usuario": usuario}).encode('utf-8'))
+            return
         
-        # ROTA UNIFICADA DE DADOS E MÉDIA
+        # ROTA DE DADOS
         if self.path == '/api/dados':
             tempos = [c.get("tempo_espera_ms", 0) for c in historico_veiculos if "tempo_espera_ms" in c]
             tempo_medio = sum(tempos) / len(tempos) if tempos else 600000
