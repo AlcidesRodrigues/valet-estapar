@@ -2,6 +2,8 @@ import json
 import os
 import mimetypes
 import base64
+import csv
+import io
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # Bancos de dados temporários
@@ -12,11 +14,11 @@ historico_veiculos = []
 # 🔒 CONFIGURAÇÃO DE ACESSOS (NÍVEIS DE USUÁRIO)
 # ========================================================
 USUARIOS = {
-    "estapar": "123",   # Acesso Total
-    "caixa": "123",     # Acesso Caixa + Solicitações
-    "caixa1": "123",    # Acesso APENAS Caixa
-    "operador": "123",  # Acesso APENAS Solicitações
-    "operador2": "123"  # Acesso APENAS Painel Cliente
+    "estapar": "123",   
+    "caixa": "123",     
+    "caixa1": "123",    
+    "operador": "123",  
+    "operador2": "123"  
 }
 # ========================================================
 
@@ -54,12 +56,9 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         self.send_response(401)
         self.send_header('WWW-Authenticate', 'Basic realm="Acesso Restrito"')
         self.end_headers()
-        self.wfile.write(b"Acesso Negado.")
+        self.wfile.write(b"Acesso Negado. Feche a aba ou digite a senha correta.")
         return False
 
-    # ========================================================
-    # 🤖 RESPOSTA PARA O ROBÔ (HEAD) - MANTÉM O SERVIDOR ONLINE
-    # ========================================================
     def do_HEAD(self):
         if self.path == '/api/ping':
             self.send_response(200)
@@ -72,7 +71,6 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         global fila_veiculos, historico_veiculos
         diretorio_atual = os.path.dirname(os.path.abspath(__file__))
         
-        # 🤖 RESPOSTA PARA O ROBÔ (GET)
         if self.path == '/api/ping':
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
@@ -89,6 +87,34 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps({"usuario": usuario}).encode('utf-8'))
+            return
+        
+        # ========================================================
+        # NOVA ROTA: GERADOR DE RELATÓRIO EXCEL (CSV)
+        # ========================================================
+        if self.path == '/api/relatorio':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/csv; charset=utf-8')
+            self.send_header('Content-Disposition', 'attachment; filename="relatorio_diario_valet.csv"')
+            self.end_headers()
+
+            output = io.StringIO()
+            writer = csv.writer(output, delimiter=';')
+            # Cabeçalho do Excel
+            writer.writerow(['Prisma', 'Placa', 'Modelo', 'Hora Solicitado', 'Hora Entregue (Baixa)', 'Tempo Total de Espera'])
+
+            for c in historico_veiculos:
+                tempo_min = round(c.get("tempo_espera_ms", 0) / 60000)
+                writer.writerow([
+                    c.get("prisma", ""),
+                    c.get("placa", ""),
+                    c.get("modelo", ""),
+                    c.get("hora_solicitacao", ""),
+                    c.get("hora_baixa", ""),
+                    f"{tempo_min} min"
+                ])
+
+            self.wfile.write(output.getvalue().encode('utf-8'))
             return
         
         if self.path == '/api/dados':
@@ -123,7 +149,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
                     self.wfile.write(f.read())
                 return
             except Exception as e:
-                print(f"Erro ao carregar arquivo: {e}")
+                pass
         
         self.send_response(404)
         self.end_headers()
@@ -172,8 +198,8 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
                 carro_alvo["hora_baixa"] = hora_baixa
                 carro_alvo["tempo_espera_ms"] = timestamp_baixa - carro_alvo["id"]
                 
+                # Agora o sistema guarda TUDO do dia, não apenas 20
                 historico_veiculos.insert(0, carro_alvo)
-                historico_veiculos = historico_veiculos[:20] 
                 
                 fila_veiculos = [c for c in fila_veiculos if c["id"] != carro_id]
 
