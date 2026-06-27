@@ -57,6 +57,9 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         self.wfile.write(b"Acesso Negado.")
         return False
 
+    # ========================================================
+    # 🤖 RESPOSTA PARA O ROBÔ (HEAD) - MANTÉM O SERVIDOR ONLINE
+    # ========================================================
     def do_HEAD(self):
         if self.path == '/api/ping':
             self.send_response(200)
@@ -69,6 +72,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         global fila_veiculos, historico_veiculos
         diretorio_atual = os.path.dirname(os.path.abspath(__file__))
         
+        # 🤖 RESPOSTA PARA O ROBÔ (GET)
         if self.path == '/api/ping':
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
