@@ -3,175 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#121212">
-    
     <title>Gerenciador de Fila - Valet</title>
-    
-    <link rel="icon" type="image/png" href="ESTAPAR-04.png">
-    <link rel="apple-touch-icon" href="ESTAPAR-04.png">
     
     <style>
         :root { --bg-color: #121212; --card-bg: #1e1e1e; --primary: #4CAF50; --danger: #f44336; --info: #2196F3; --warning: #ff9800; --text: #ffffff; }
         body { font-family: Arial, sans-serif; background-color: var(--bg-color); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; width: 100%; box-sizing: border-box; }
         
-        .top-bar { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; z-index: 1000; }
+        .top-bar { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; z-index: 1000; flex-wrap: wrap;}
         .btn-top { background: #333; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: bold;}
-        .btn-relatorio { background: var(--warning); color: #000; display: none; } /* Só aparece pra quem tem acesso geral */
+        .btn-relatorio { background: var(--warning); color: #000; display: none; }
         .btn-sair { background: var(--danger); }
 
         .container-logo { display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 25px; margin-top: 40px; }
-        .logo-estapar { width: 250px; height: auto; display: block; }
-
+        
+        /* Menu Novo */
+        .view-toggle { margin-bottom: 20px; display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 900px;}
+        .btn-aba { flex: 1; min-width: 110px; padding: 15px 10px; background: #3c3c3c; color: #aaaaaa; opacity: 0.8; font-weight: normal; border: none; border-radius: 5px; cursor: pointer;}
+        .btn-aba.active { background: var(--info); color: #ffffff; opacity: 1; font-weight: bold; }
+        
         .container { width: 100%; max-width: 600px; background: var(--card-bg); padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); text-align: center; margin-bottom: 20px; box-sizing: border-box; }
-        .container-painel { max-width: 900px; }
+        .container-largo { max-width: 1000px; }
 
         .form-grupo { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
-        .form-grupo input { padding: 15px; font-size: 1.5rem; border-radius: 10px; border: 1px solid #444; background: #000; color: var(--primary); text-align: center; font-weight: bold; }
-        .form-grupo input::placeholder { color: #555; font-weight: normal; }
+        .form-grupo input, .form-grupo select { padding: 15px; font-size: 1.2rem; border-radius: 10px; border: 1px solid #444; background: #000; color: var(--primary); text-align: center; font-weight: bold; }
 
-        button { padding: 15px; font-size: 1.3rem; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; color: white; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
-        
-        .botoes-acao { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        button { padding: 15px; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; color: white; transition: 0.2s; }
         .btn-enviar { background: var(--primary); }
         .btn-limpar { background: var(--danger); }
+        .btn-baixa { background: var(--primary); padding: 8px 15px;}
+        .btn-buscar { background: var(--info); padding: 8px 15px; }
         
-        .botoes-extras { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .btn-ps { background: var(--info); }
-        .btn-futuro { background: #262626; color: #666; }
+        .botoes-acao { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
 
-        .item-fila { display: flex; flex-direction: column; background: #2a2a2a; padding: 15px; margin: 10px 0; border-radius: 10px; text-align: left; font-size: 1.2rem; transition: 0.3s; }
-        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 1.4rem;}
-        .item-dados { color: #aaa; font-size: 1rem; }
-        
-        .btn-baixa { background: var(--danger); font-size: 1.1rem; padding: 10px 20px; align-self: flex-end; margin-top: 10px;}
+        /* Grade 2 colunas para Solicitações e Painel */
+        .grid-2-colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left;}
+        .coluna-painel { background: #222; padding: 15px; border-radius: 10px; min-height: 300px;}
+        .coluna-painel h3 { margin-top: 0; text-align: center; border-bottom: 2px solid #444; padding-bottom: 10px; }
 
-        .painel-header-box { background: var(--info); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; text-align: center; }
-        .painel-grid { display: flex; gap: 20px; }
-        .painel-coluna { flex: 1; background: #222; padding: 15px; border-radius: 10px; }
-        .painel-coluna h3 { margin-top: 0; color: var(--warning); border-bottom: 2px solid #444; padding-bottom: 10px; text-align: center;}
+        .item-fila { background: #2a2a2a; padding: 15px; margin: 10px 0; border-radius: 10px; text-align: left; transition: 0.3s; position: relative;}
+        .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 1.2rem;}
+        .item-dados { color: #aaa; font-size: 0.9rem; margin-bottom: 10px;}
         
-        .alerta-atraso { animation: piscarVermelho 1s infinite alternate; border: 2px solid #ff0000 !important; }
-        @keyframes piscarVermelho { 0% { background-color: #2a2a2a; } 100% { background-color: #630000; } }
+        .borda-amarela { border-left: 6px solid var(--warning); }
+        .manobrista-nome { color: var(--warning); font-weight: bold; font-size: 0.9rem;}
 
-        .view-toggle { margin-bottom: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 900px;}
-        .btn-aba { flex: 1; min-width: 120px; padding: 15px 20px; background: #3c3c3c; color: #aaaaaa; opacity: 0.8; font-weight: normal; }
-        .btn-aba.active { background: var(--info); color: #ffffff; opacity: 1; font-weight: bold; box-shadow: 0 0 10px rgba(33, 150, 243, 0.5); }
-        
         .hidden { display: none !important; }
-
-        @media (max-width: 768px) {
-            .painel-grid { flex-direction: column; }
-            .top-bar { top: 5px; right: 5px; }
-        }
+        
+        .seletor-manobrista { display: flex; gap: 5px; margin-top: 10px;}
+        .seletor-manobrista select { flex: 1; padding: 5px; background: #000; color: #fff; border: 1px solid #555; }
+        
+        @media (max-width: 768px) { .grid-2-colunas { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <button id="btn-relatorio-top" class="btn-top btn-relatorio" onclick="baixarRelatorio()">📥 Relatório</button>
+        <button id="btn-relatorio" class="btn-top btn-relatorio" onclick="baixarRelatorio()">📥 Relatório</button>
         <button class="btn-top" onclick="toggleFullScreen()">⛶ Tela Cheia</button>
         <button class="btn-top btn-sair" onclick="fazerLogout()">Sair ✖</button>
     </div>
 
     <div class="container-logo">
-        <img src="ESTAPAR-04.png" alt="Estapar Valet" class="logo-estapar">
+        <h1 style="color: var(--primary); margin:0;">ESTAPAR VALET</h1>
     </div>
 
     <div class="view-toggle">
-        <button id="btn-caixa" class="btn-aba" style="display: none;" onclick="mudarPerfil('caixa')">CAIXA</button>
-        <button id="btn-solicitacoes" class="btn-aba" style="display: none;" onclick="mudarPerfil('solicitacoes')">SOLICITAÇÕES</button>
-        <button id="btn-painel" class="btn-aba" style="display: none;" onclick="mudarPerfil('painel')">PAINEL</button>
+        <button id="btn-caixa" class="btn-aba" onclick="mudarPerfil('caixa')">CAIXA</button>
+        <button id="btn-solicitacoes" class="btn-aba" onclick="mudarPerfil('solicitacoes')">SOLICITAÇÕES</button>
+        <button id="btn-painel" class="btn-aba" onclick="mudarPerfil('painel')">PAINEL</button>
+        <button id="btn-colab" class="btn-aba" onclick="mudarPerfil('colaboradores')" style="display:none;">COLABORADORES</button>
     </div>
 
     <div id="tela-caixa" class="container hidden">
         <h2>SOLICITAR VEÍCULO</h2>
-        
         <div class="form-grupo">
-            <input type="text" id="input-placa" placeholder="Placa (Ex: ABC1234)" style="text-transform: uppercase;">
-            <input type="text" id="input-modelo" list="lista-modelos" placeholder="Modelo do Carro" style="text-transform: uppercase;">
-            
-            <datalist id="lista-modelos">
-                <option value="AUDI">
-                <option value="BMW">
-                <option value="BYD">
-                <option value="CAOA CHERY">
-                <option value="CHEVROLET">
-                <option value="CITROËN">
-                <option value="FIAT">
-                <option value="FORD">
-                <option value="HONDA">
-                <option value="HYUNDAI">
-                <option value="JEEP">
-                <option value="KIA">
-                <option value="LAND ROVER">
-                <option value="MERCEDES-BENZ">
-                <option value="MITSUBISHI">
-                <option value="NISSAN">
-                <option value="PEUGEOT">
-                <option value="RENAULT">
-                <option value="TOYOTA">
-                <option value="VOLKSWAGEN">
-                <option value="VOLVO">
-            </datalist>
-
+            <input type="text" id="input-placa" placeholder="Placa (Ex: ABC1234)">
+            <input type="text" id="input-modelo" placeholder="Modelo do Carro">
             <input type="text" id="input-prisma" placeholder="Nº do Prisma">
         </div>
-
         <div class="botoes-acao">
             <button class="btn-limpar" onclick="limparFormulario()">LIMPAR</button> 
             <button class="btn-enviar" onclick="enviarPedido()">ENVIAR</button>
         </div>
-        
-        <div class="botoes-extras">
-            <button id="btn-ps" class="btn-ps" onclick="botaoPsPressionado()">PS</button>
-            <button id="btn-vazio1" class="btn-futuro" onclick="botaoFuturo()">-</button>
-            <button id="btn-vazio2" class="btn-futuro" onclick="botaoFuturo()">-</button>
-            <button id="btn-vazio3" class="btn-futuro" onclick="botaoFuturo()">-</button>
-        </div>
     </div>
 
-    <div id="tela-solicitacoes" class="container hidden">
-        <h2>FILA DE SOLICITAÇÕES</h2>
-        <div id="lista-fila"></div>
+    <div id="tela-colaboradores" class="container hidden">
+        <h2>ADICIONAR COLABORADOR</h2>
+        <div class="form-grupo">
+            <input type="text" id="colab-nome" placeholder="Nome do Colaborador">
+            <input type="text" id="colab-matricula" placeholder="Matrícula ou CPF">
+            <input type="time" id="colab-entrada" placeholder="Horário de Entrada">
+            <input type="time" id="colab-saida" placeholder="Horário de Saída">
+            <input type="text" id="colab-escala" placeholder="Escala (Ex: 6x1)">
+        </div>
+        <button class="btn-enviar" style="width:100%;" onclick="adicionarColaborador()">SALVAR COLABORADOR</button>
+        
+        <h3 style="margin-top:30px;">Equipe Cadastrada</h3>
+        <div id="lista-colaboradores" style="text-align:left;"></div>
     </div>
 
-    <div id="tela-painel" class="container container-painel hidden">
-        <div class="painel-header-box">
-            TEMPO MÉDIO ATENDIMENTO (TMA): <span id="display-tempo-medio">Calculando...</span>
-        </div>
-        
-        <div class="painel-grid">
-            <div class="painel-coluna">
-                <h3>SOLICITAÇÕES (Na Fila)</h3>
-                <div id="painel-col-solicitacoes"></div>
+    <div id="tela-solicitacoes" class="container container-largo hidden">
+        <div class="grid-2-colunas">
+            <div class="coluna-painel">
+                <h3 style="color: var(--info);">SOLICITADOS (Aguardando)</h3>
+                <div id="solicitacoes-col-1"></div>
             </div>
-            
-            <div class="painel-coluna">
-                <h3>EM MANOBRA (Últimos 20)</h3>
-                <div id="painel-col-percurso"></div>
+            <div class="coluna-painel">
+                <h3 style="color: var(--warning);">EM MANOBRA</h3>
+                <div id="solicitacoes-col-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tela-painel" class="container container-largo hidden">
+        <h3 style="color: var(--info);">TEMPO MÉDIO (TMA): <span id="display-tma">Calculando...</span></h3>
+        <div class="grid-2-colunas">
+            <div class="coluna-painel">
+                <h3>SOLICITAÇÕES (Na Fila)</h3>
+                <div id="painel-col-1"></div>
+            </div>
+            <div class="coluna-painel">
+                <h3 style="color: var(--primary);">ENTREGUE (Últimos 20)</h3>
+                <div id="painel-col-2"></div>
             </div>
         </div>
     </div>
 
     <script>
         var perfilAtual = ""; 
-        var tempoMedioAtualMs = 600000; 
+        var listaGlobalColaboradores = [];
 
-        function baixarRelatorio() {
-            // Usa o link direto da nossa nova API para o navegador baixar o arquivo Excel
-            window.location.href = "/api/relatorio";
-        }
-
-        function fazerLogout() {
-            // O Truque Hacker: Tentamos logar com "sair:sair", o navegador vai dar erro e esquecer a senha salva
-            alert("Sua sessão foi encerrada. A tela de senha aparecerá novamente.");
-            window.location.href = window.location.protocol + "//sair:sair@" + window.location.host;
-        }
+        function baixarRelatorio() { window.location.href = "/api/relatorio"; }
+        function fazerLogout() { window.location.href = window.location.protocol + "//sair:sair@" + window.location.host; }
 
         function configurarAcessos() {
             var xhr = new XMLHttpRequest();
@@ -179,41 +142,12 @@
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     var res = JSON.parse(xhr.responseText);
-                    var usuario = res.usuario ? res.usuario.toLowerCase() : "";
-
-                    var btnCaixa = document.getElementById("btn-caixa");
-                    var btnSolicitacoes = document.getElementById("btn-solicitacoes");
-                    var btnPainel = document.getElementById("btn-painel");
-                    var btnRelatorio = document.getElementById("btn-relatorio-top");
-
-                    if (usuario === "estapar") {
-                        btnCaixa.style.display = "";
-                        btnSolicitacoes.style.display = "";
-                        btnPainel.style.display = "";
-                        btnRelatorio.style.display = "flex"; // Somente estapar tem acesso ao botão de relatório
-                        mudarPerfil("caixa");
-
-                    } else if (usuario === "caixa") {
-                        btnCaixa.style.display = "";
-                        btnSolicitacoes.style.display = "";
-                        mudarPerfil("caixa");
-
-                    } else if (usuario === "caixa1") {
-                        btnCaixa.style.display = "";
-                        mudarPerfil("caixa");
-
-                    } else if (usuario === "operador") {
-                        btnSolicitacoes.style.display = "";
-                        mudarPerfil("solicitacoes");
-
-                    } else if (usuario === "operador2") {
-                        btnPainel.style.display = "";
-                        mudarPerfil("painel");
-
-                    } else {
-                        btnCaixa.style.display = "";
-                        mudarPerfil("caixa");
+                    var u = res.usuario ? res.usuario.toLowerCase() : "";
+                    if (u === "estapar") {
+                        document.getElementById("btn-relatorio").style.display = "flex";
+                        document.getElementById("btn-colab").style.display = "block";
                     }
+                    mudarPerfil("caixa");
                 }
             };
             xhr.send();
@@ -221,239 +155,201 @@
 
         window.onload = configurarAcessos;
 
-        function botaoPsPressionado() {
-            try { 
-                var campoPrisma = document.getElementById("input-prisma");
-                var valorAtual = campoPrisma.value.trim();
-                
-                if (valorAtual === "") {
-                    campoPrisma.value = "PS";
-                } else {
-                    campoPrisma.value = valorAtual + " PS";
-                }
-            } catch(e) {}
-        }
-
-        function botaoFuturo() {
-            console.log("Botão reservado para o futuro.");
-        }
-
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) {
-                if(document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                }
-            } else {
-                if (document.exitFullscreen) { document.exitFullscreen(); }
-            }
-        }
-
         function limparFormulario() {
-            try {
-                document.getElementById("input-placa").value = "";
-                document.getElementById("input-modelo").value = "";
-                document.getElementById("input-prisma").value = "";
-            } catch(e) {}
+            document.getElementById("input-placa").value = "";
+            document.getElementById("input-modelo").value = "";
+            document.getElementById("input-prisma").value = "";
         }
 
         function enviarPedido() {
-            try {
-                var placa = document.getElementById("input-placa").value.trim();
-                var modelo = document.getElementById("input-modelo").value.trim();
-                var prisma = document.getElementById("input-prisma").value.trim();
+            var prisma = document.getElementById("input-prisma").value.trim();
+            if (prisma === "") { alert("PRISMA obrigatório!"); return; }
 
-                if (prisma === "") {
-                    alert("O campo PRISMA é obrigatório!");
-                    return;
+            var dados = {
+                id: Date.now(), 
+                placa: document.getElementById("input-placa").value,
+                modelo: document.getElementById("input-modelo").value,
+                prisma: prisma,
+                hora_solicitacao: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+            };
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/adicionar", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    limparFormulario();
+                    solicitarAtualizacaoDados();
                 }
-
-                var novoCarro = {
-                    id: Date.now(), 
-                    placa: placa,
-                    modelo: modelo,
-                    prisma: prisma,
-                    hora_solicitacao: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                };
-                
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", "/api/adicionar", true);
-                xhr.setRequestHeader("Content-Type", "application/json");
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === 4) {
-                        if (xhr.status === 200) {
-                            limparFormulario();
-                            solicitarAtualizacaoDados();
-                        } else if (xhr.status === 400) {
-                            alert("PRISMA JÁ SOLICITADO");
-                        } else {
-                            alert("Erro ao enviar pedido. Verifique a conexão.");
-                        }
-                    }
-                };
-                xhr.send(JSON.stringify(novoCarro));
-            } catch(e) {}
+            };
+            xhr.send(JSON.stringify(dados));
         }
 
-        function darBaixa(id) {
-            try {
-                var dadosBaixa = {
-                    id: id,
-                    timestamp_baixa: Date.now(),
-                    hora_baixa: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-                };
+        function adicionarColaborador() {
+            var dados = {
+                id: Date.now(),
+                nome: document.getElementById("colab-nome").value,
+                matricula: document.getElementById("colab-matricula").value,
+                entrada: document.getElementById("colab-entrada").value,
+                saida: document.getElementById("colab-saida").value,
+                escala: document.getElementById("colab-escala").value
+            };
+            if(!dados.nome) return alert("Nome obrigatório");
 
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", "/api/baixa", true);
-                xhr.setRequestHeader("Content-Type", "application/json");
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === 4 && xhr.status === 200) {
-                        solicitarAtualizacaoDados();
-                    }
-                };
-                xhr.send(JSON.stringify(dadosBaixa));
-            } catch(e) {}
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/colaborador/adicionar", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    alert("Colaborador Salvo!");
+                    document.getElementById("colab-nome").value = "";
+                    document.getElementById("colab-matricula").value = "";
+                    solicitarAtualizacaoDados();
+                }
+            };
+            xhr.send(JSON.stringify(dados));
         }
 
         function solicitarAtualizacaoDados() {
-            try {
-                var xhr = new XMLHttpRequest();
-                xhr.open("GET", "/api/dados", true);
-                xhr.onreadystatechange = function() {
-                    if (xhr.readyState === 4 && xhr.status === 200) {
-                        var dados = JSON.parse(xhr.responseText);
-                        tempoMedioAtualMs = dados.tempo_medio;
-                        if (perfilAtual === 'solicitacoes') renderizarSolicitacoes(dados.fila);
-                        if (perfilAtual === 'painel') renderizarPainel(dados);
-                    }
-                };
-                xhr.send();
-            } catch(e) {}
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/api/dados", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var dados = JSON.parse(xhr.responseText);
+                    listaGlobalColaboradores = dados.colaboradores;
+                    
+                    if (perfilAtual === 'colaboradores') renderizarColab(dados.colaboradores);
+                    if (perfilAtual === 'solicitacoes') renderizarSolicitacoes(dados.fila);
+                    if (perfilAtual === 'painel') renderizarPainel(dados);
+                }
+            };
+            xhr.send();
+        }
+
+        function obterColaboradoresDisponiveis() {
+            var agora = new Date();
+            var horaAtual = agora.getHours() * 60 + agora.getMinutes();
+            
+            return listaGlobalColaboradores.filter(function(c) {
+                if(!c.entrada || !c.saida) return true; 
+                var ent = c.entrada.split(":");
+                var sai = c.saida.split(":");
+                var minEnt = parseInt(ent[0])*60 + parseInt(ent[1]);
+                var minSai = parseInt(sai[0])*60 + parseInt(sai[1]);
+                
+                if (minSai < minEnt) { // Vira a noite
+                    return horaAtual >= minEnt || horaAtual <= minSai;
+                } else {
+                    return horaAtual >= minEnt && horaAtual <= minSai;
+                }
+            });
+        }
+
+        function renderizarColab(colabs) {
+            var div = document.getElementById("lista-colaboradores");
+            div.innerHTML = "";
+            colabs.forEach(function(c) {
+                div.innerHTML += "<div class='item-fila'><strong>" + c.nome + "</strong> (" + c.matricula + ") <br><small>" + c.entrada + " às " + c.saida + " - " + c.escala + "</small></div>";
+            });
         }
 
         function renderizarSolicitacoes(fila) {
-            try {
-                var listaDiv = document.getElementById("lista-fila");
-                listaDiv.innerHTML = "";
+            var col1 = document.getElementById("solicitacoes-col-1");
+            var col2 = document.getElementById("solicitacoes-col-2");
+            col1.innerHTML = ""; col2.innerHTML = "";
+
+            var disponiveis = obterColaboradoresDisponiveis();
+            var optionsHTML = "<option value=''>Selecione o Manobrista...</option>";
+            disponiveis.forEach(function(c) {
+                optionsHTML += "<option value='" + c.nome + "'>" + c.matricula + " - " + c.nome + "</option>";
+            });
+
+            fila.forEach(function(carro) {
+                var info = "<strong>Prisma: " + carro.prisma + "</strong><br><span class='item-dados'>" + carro.modelo + " | " + carro.hora_solicitacao + "</span>";
                 
-                if (!fila || fila.length === 0) {
-                    listaDiv.innerHTML = "<p style='color: #888;'>Nenhum veículo na fila.</p>";
-                    return;
+                if(carro.status === "solicitado") {
+                    var dropID = "drop-" + carro.id;
+                    col1.innerHTML += 
+                        "<div class='item-fila'>" + info + 
+                        "<div style='margin-top:10px;'><button class='btn-buscar' onclick='mostrarDropdown(" + carro.id + ")'>BUSCAR</button></div>" +
+                        "<div id='" + dropID + "' class='seletor-manobrista hidden'>" +
+                            "<select id='sel-" + carro.id + "'>" + optionsHTML + "</select>" +
+                            "<button class='btn-enviar' onclick='atribuirManobrista(" + carro.id + ")'>OK</button>" +
+                        "</div></div>";
+                } else {
+                    col2.innerHTML += 
+                        "<div class='item-fila borda-amarela'>" + info + 
+                        "<br><span class='manobrista-nome'>Resp: " + carro.manobrista + "</span>" +
+                        "<div style='margin-top:10px; text-align:right;'><button class='btn-baixa' onclick='darBaixa(" + carro.id + ")'>BAIXA</button></div></div>";
                 }
-
-                var agora = Date.now();
-
-                fila.forEach(function(carro, index) {
-                    var tempoDecorridoMs = agora - carro.id;
-                    var classeAlerta = "";
-                    if (tempoDecorridoMs > tempoMedioAtualMs) {
-                        classeAlerta = "alerta-atraso";
-                    }
-
-                    listaDiv.innerHTML += 
-                        "<div class='item-fila " + classeAlerta + "'>" +
-                            "<div class='item-header'>" +
-                                "<span><strong>" + (index + 1) + "º</strong> - Prisma: <strong>" + carro.prisma + "</strong></span>" +
-                                "<span style='color:var(--info);'>" + carro.hora_solicitacao + "</span>" +
-                            "</div>" +
-                            "<div class='item-dados'>" +
-                                "Placa: " + (carro.placa || 'N/A') + " | Modelo: " + (carro.modelo || 'N/A') +
-                            "</div>" +
-                            "<button class='btn-baixa' onclick='darBaixa(" + carro.id + ")'>BAIXA</button>" +
-                        "</div>";
-                });
-            } catch(e) {}
+            });
         }
 
-        function formatarTempo(ms) {
-            var minutos = Math.round(ms / 60000);
-            return minutos + " min";
+        function mostrarDropdown(id) {
+            document.getElementById("drop-" + id).classList.remove("hidden");
+        }
+
+        function atribuirManobrista(id) {
+            var sel = document.getElementById("sel-" + id).value;
+            var payload = { id: id, manobrista: sel || "Não Informado" };
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/atribuir", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() { if (xhr.readyState === 4) solicitarAtualizacaoDados(); };
+            xhr.send(JSON.stringify(payload));
+        }
+
+        function darBaixa(id) {
+            var dados = { id: id, timestamp_baixa: Date.now(), hora_baixa: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) };
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/baixa", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() { if (xhr.readyState === 4) solicitarAtualizacaoDados(); };
+            xhr.send(JSON.stringify(dados));
         }
 
         function renderizarPainel(dados) {
-            try {
-                document.getElementById("display-tempo-medio").innerText = formatarTempo(dados.tempo_medio);
+            document.getElementById("display-tma").innerText = Math.round(dados.tempo_medio / 60000) + " min";
+            var col1 = document.getElementById("painel-col-1");
+            var col2 = document.getElementById("painel-col-2");
+            col1.innerHTML = ""; col2.innerHTML = "";
 
-                var colSolicitacoes = document.getElementById("painel-col-solicitacoes");
-                colSolicitacoes.innerHTML = "";
-                if (dados.fila.length === 0) {
-                    colSolicitacoes.innerHTML = "<p style='color:#666; text-align:center;'>Vazio</p>";
-                } else {
-                    var agora = Date.now();
-                    
-                    dados.fila.forEach(function(carro) {
-                        var tempoDecorridoMs = agora - carro.id;
-                        var classeAlerta = "";
-                        
-                        if (tempoDecorridoMs > tempoMedioAtualMs) {
-                            classeAlerta = "alerta-atraso";
-                        }
+            dados.fila.forEach(function(carro) {
+                var cssClasse = carro.status === "em_manobra" ? "borda-amarela" : "";
+                var manoHtml = carro.status === "em_manobra" ? "<br><span class='manobrista-nome'>Em Manobra: " + carro.manobrista + "</span>" : "";
+                
+                col1.innerHTML += 
+                    "<div class='item-fila " + cssClasse + "'>" +
+                        "<strong>Prisma: " + carro.prisma + "</strong>" +
+                        "<div class='item-dados'>Placa: " + carro.placa + " | Solicitado: " + carro.hora_solicitacao + manoHtml + "</div>" +
+                    "</div>";
+            });
 
-                        colSolicitacoes.innerHTML += 
-                            "<div class='item-fila " + classeAlerta + "' style='padding:10px;'>" +
-                                "<strong>Prisma: " + carro.prisma + "</strong>" +
-                                "<div class='item-dados' style='font-size:0.9rem;'>" +
-                                    "Placa: " + (carro.placa || 'N/A') + " | Modelo: " + (carro.modelo || 'N/A') + "<br>" +
-                                    "Solicitado: <span style='color:var(--info);'>" + carro.hora_solicitacao + "</span>" +
-                                "</div>" +
-                            "</div>";
-                    });
-                }
-
-                var colPercurso = document.getElementById("painel-col-percurso");
-                colPercurso.innerHTML = "";
-                if (dados.historico.length === 0) {
-                    colPercurso.innerHTML = "<p style='color:#666; text-align:center;'>Vazio</p>";
-                } else {
-                    // Cortamos para mostrar apenas os últimos 20 na tela e não poluir, 
-                    // mas o relatório de Excel baixará TODOS.
-                    var historicoTela = dados.historico.slice(0, 20);
-                    
-                    historicoTela.forEach(function(carro) {
-                        colPercurso.innerHTML += 
-                            "<div class='item-fila' style='padding:10px; border-left: 5px solid var(--primary);'>" +
-                                "<strong>Prisma: " + carro.prisma + "</strong>" +
-                                "<div class='item-dados' style='font-size:0.8rem;'>" +
-                                    "Placa: " + (carro.placa || 'N/A') + " | Modelo: " + (carro.modelo || 'N/A') + "<br>" +
-                                    "Solicitado: " + carro.hora_solicitacao + " | Baixa: <span style='color:var(--primary);'>" + carro.hora_baixa + "</span>" +
-                                "</div>" +
-                            "</div>";
-                    });
-                }
-            } catch(e) {}
+            var histTela = dados.historico.slice(0, 20);
+            histTela.forEach(function(carro) {
+                col2.innerHTML += 
+                    "<div class='item-fila' style='border-left: 5px solid var(--primary);'>" +
+                        "<strong>Prisma: " + carro.prisma + "</strong>" +
+                        "<div class='item-dados'>Resp: " + (carro.manobrista||"N/A") + " <br> Entregue às: <span style='color:#fff'>" + carro.hora_baixa + "</span></div>" +
+                    "</div>";
+            });
         }
 
-        function mudarPerfil(perfil) {
-            try {
-                perfilAtual = perfil;
-                
-                document.getElementById("btn-caixa").classList.remove("active");
-                document.getElementById("btn-solicitacoes").classList.remove("active");
-                document.getElementById("btn-painel").classList.remove("active");
-
-                document.getElementById("tela-caixa").classList.add("hidden");
-                document.getElementById("tela-solicitacoes").classList.add("hidden");
-                document.getElementById("tela-painel").classList.add("hidden");
-
-                if (perfil === 'caixa') {
-                    document.getElementById("btn-caixa").classList.add("active");
-                    document.getElementById("tela-caixa").classList.remove("hidden");
-                } else if (perfil === 'solicitacoes') {
-                    document.getElementById("btn-solicitacoes").classList.add("active");
-                    document.getElementById("tela-solicitacoes").classList.remove("hidden");
-                    solicitarAtualizacaoDados();
-                } else if (perfil === 'painel') {
-                    document.getElementById("btn-painel").classList.add("active");
-                    document.getElementById("tela-painel").classList.remove("hidden");
-                    solicitarAtualizacaoDados();
-                }
-            } catch(e) {}
+        function mudarPerfil(aba) {
+            perfilAtual = aba;
+            document.querySelectorAll('.btn-aba').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+            
+            if(aba === 'caixa') { document.getElementById('btn-caixa').classList.add('active'); document.getElementById('tela-caixa').classList.remove('hidden'); }
+            if(aba === 'colaboradores') { document.getElementById('btn-colab').classList.add('active'); document.getElementById('tela-colaboradores').classList.remove('hidden'); }
+            if(aba === 'solicitacoes') { document.getElementById('btn-solicitacoes').classList.add('active'); document.getElementById('tela-solicitacoes').classList.remove('hidden'); solicitarAtualizacaoDados(); }
+            if(aba === 'painel') { document.getElementById('btn-painel').classList.add('active'); document.getElementById('tela-painel').classList.remove('hidden'); solicitarAtualizacaoDados(); }
         }
 
         setInterval(function() {
-            if (perfilAtual === 'solicitacoes' || perfilAtual === 'painel') {
-                solicitarAtualizacaoDados();
-            }
-        }, 2000);
+            if (perfilAtual !== 'caixa' && perfilAtual !== 'colaboradores') solicitarAtualizacaoDados();
+        }, 10000);
     </script>
 </body>
 </html>
