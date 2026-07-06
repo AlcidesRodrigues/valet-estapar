@@ -9,14 +9,21 @@
         :root { --bg-color: #121212; --card-bg: #1e1e1e; --primary: #4CAF50; --danger: #f44336; --info: #2196F3; --warning: #ff9800; --text: #ffffff; }
         body { font-family: Arial, sans-serif; background-color: var(--bg-color); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; width: 100%; box-sizing: border-box; }
         
-        .top-bar { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; z-index: 1000; flex-wrap: wrap;}
-        .btn-top { background: #333; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: bold;}
-        .btn-relatorio { background: var(--warning); color: #000; display: none; }
-        .btn-sair { background: var(--danger); }
-
-        .container-logo { display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 25px; margin-top: 40px; }
+        /* MENU LATERAL */
+        .btn-menu { position: fixed; top: 20px; left: 20px; font-size: 2rem; color: var(--primary); background: transparent; border: none; cursor: pointer; z-index: 2001; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1999; display: none; }
+        .overlay.ativo { display: block; }
         
-        /* Menu Novo */
+        .menu-lateral { position: fixed; top: 0; left: -300px; width: 280px; height: 100%; background: #1a1a1a; border-right: 2px solid #333; z-index: 2000; transition: 0.3s ease; padding-top: 80px; display: flex; flex-direction: column; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
+        .menu-lateral.aberto { left: 0; }
+        .menu-item { padding: 18px 25px; color: #fff; font-size: 1.2rem; cursor: pointer; border-bottom: 1px solid #333; font-weight: bold; }
+        .menu-item:hover { background: #333; color: var(--primary); }
+        .menu-danger { color: var(--danger); margin-top: auto; border-top: 1px solid #333; border-bottom: none; }
+        .menu-danger:hover { color: #fff; background: var(--danger); }
+
+        .container-logo { display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 25px; margin-top: 20px; }
+        
+        /* ABAS CENTRAIS */
         .view-toggle { margin-bottom: 20px; display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 900px;}
         .btn-aba { flex: 1; min-width: 110px; padding: 15px 10px; background: #3c3c3c; color: #aaaaaa; opacity: 0.8; font-weight: normal; border: none; border-radius: 5px; cursor: pointer;}
         .btn-aba.active { background: var(--info); color: #ffffff; opacity: 1; font-weight: bold; }
@@ -32,10 +39,10 @@
         .btn-limpar { background: var(--danger); }
         .btn-baixa { background: var(--primary); padding: 8px 15px;}
         .btn-buscar { background: var(--info); padding: 8px 15px; }
+        .btn-excluir { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 8px 15px; }
         
         .botoes-acao { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
 
-        /* Grade 2 colunas para Solicitações e Painel */
         .grid-2-colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left;}
         .coluna-painel { background: #222; padding: 15px; border-radius: 10px; min-height: 300px;}
         .coluna-painel h3 { margin-top: 0; text-align: center; border-bottom: 2px solid #444; padding-bottom: 10px; }
@@ -57,10 +64,14 @@
 </head>
 <body>
 
-    <div class="top-bar">
-        <button id="btn-relatorio" class="btn-top btn-relatorio" onclick="baixarRelatorio()">📥 Relatório</button>
-        <button class="btn-top" onclick="toggleFullScreen()">⛶ Tela Cheia</button>
-        <button class="btn-top btn-sair" onclick="fazerLogout()">Sair ✖</button>
+    <button class="btn-menu" onclick="toggleMenu()">☰</button>
+    <div class="overlay" id="menu-overlay" onclick="toggleMenu()"></div>
+    
+    <div class="menu-lateral" id="menu-lateral">
+        <div id="menu-colab" class="menu-item hidden" onclick="abrirColaboradores()">👥 Colaboradores</div>
+        <div id="menu-relatorio" class="menu-item hidden" onclick="baixarRelatorio()">📥 Baixar Relatório</div>
+        <div class="menu-item" onclick="toggleFullScreen()">⛶ Tela Cheia</div>
+        <div class="menu-item menu-danger" onclick="fazerLogout()">✖ Sair do Sistema</div>
     </div>
 
     <div class="container-logo">
@@ -71,7 +82,6 @@
         <button id="btn-caixa" class="btn-aba" onclick="mudarPerfil('caixa')">CAIXA</button>
         <button id="btn-solicitacoes" class="btn-aba" onclick="mudarPerfil('solicitacoes')">SOLICITAÇÕES</button>
         <button id="btn-painel" class="btn-aba" onclick="mudarPerfil('painel')">PAINEL</button>
-        <button id="btn-colab" class="btn-aba" onclick="mudarPerfil('colaboradores')" style="display:none;">COLABORADORES</button>
     </div>
 
     <div id="tela-caixa" class="container hidden">
@@ -88,15 +98,19 @@
     </div>
 
     <div id="tela-colaboradores" class="container hidden">
-        <h2>ADICIONAR COLABORADOR</h2>
+        <h2 id="titulo-form-colab">ADICIONAR COLABORADOR</h2>
         <div class="form-grupo">
+            <input type="hidden" id="colab-id">
             <input type="text" id="colab-nome" placeholder="Nome do Colaborador">
             <input type="text" id="colab-matricula" placeholder="Matrícula ou CPF">
-            <input type="time" id="colab-entrada" placeholder="Horário de Entrada">
-            <input type="time" id="colab-saida" placeholder="Horário de Saída">
+            <input type="time" id="colab-entrada" placeholder="Horário Entrada (Ex: 08:00)">
+            <input type="time" id="colab-saida" placeholder="Horário Saída (Ex: 18:00)">
             <input type="text" id="colab-escala" placeholder="Escala (Ex: 6x1)">
         </div>
-        <button class="btn-enviar" style="width:100%;" onclick="adicionarColaborador()">SALVAR COLABORADOR</button>
+        <div class="botoes-acao">
+            <button class="btn-limpar" onclick="limparFormColab()">CANCELAR</button>
+            <button class="btn-enviar" onclick="salvarColaborador()">SALVAR</button>
+        </div>
         
         <h3 style="margin-top:30px;">Equipe Cadastrada</h3>
         <div id="lista-colaboradores" style="text-align:left;"></div>
@@ -133,8 +147,28 @@
         var perfilAtual = ""; 
         var listaGlobalColaboradores = [];
 
-        function baixarRelatorio() { window.location.href = "/api/relatorio"; }
+        function toggleMenu() {
+            document.getElementById("menu-lateral").classList.toggle("aberto");
+            document.getElementById("menu-overlay").classList.toggle("ativo");
+        }
+
+        function abrirColaboradores() {
+            toggleMenu();
+            mudarPerfil('colaboradores');
+        }
+
+        function baixarRelatorio() { 
+            toggleMenu();
+            window.location.href = "/api/relatorio"; 
+        }
+
         function fazerLogout() { window.location.href = window.location.protocol + "//sair:sair@" + window.location.host; }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); } 
+            else if (document.exitFullscreen) { document.exitFullscreen(); }
+            toggleMenu();
+        }
 
         function configurarAcessos() {
             var xhr = new XMLHttpRequest();
@@ -144,8 +178,8 @@
                     var res = JSON.parse(xhr.responseText);
                     var u = res.usuario ? res.usuario.toLowerCase() : "";
                     if (u === "estapar") {
-                        document.getElementById("btn-relatorio").style.display = "flex";
-                        document.getElementById("btn-colab").style.display = "block";
+                        document.getElementById("menu-relatorio").classList.remove("hidden");
+                        document.getElementById("menu-colab").classList.remove("hidden");
                     }
                     mudarPerfil("caixa");
                 }
@@ -185,31 +219,71 @@
             xhr.send(JSON.stringify(dados));
         }
 
-        function adicionarColaborador() {
+        /* ----- FUNÇÕES DE COLABORADORES (SALVAR, EDITAR, EXCLUIR) ----- */
+        function limparFormColab() {
+            document.getElementById("colab-id").value = "";
+            document.getElementById("colab-nome").value = "";
+            document.getElementById("colab-matricula").value = "";
+            document.getElementById("colab-entrada").value = "";
+            document.getElementById("colab-saida").value = "";
+            document.getElementById("colab-escala").value = "";
+            document.getElementById("titulo-form-colab").innerText = "ADICIONAR COLABORADOR";
+        }
+
+        function salvarColaborador() {
+            var idEdit = document.getElementById("colab-id").value;
             var dados = {
-                id: Date.now(),
+                id: idEdit ? parseInt(idEdit) : Date.now(),
                 nome: document.getElementById("colab-nome").value,
                 matricula: document.getElementById("colab-matricula").value,
                 entrada: document.getElementById("colab-entrada").value,
                 saida: document.getElementById("colab-saida").value,
                 escala: document.getElementById("colab-escala").value
             };
-            if(!dados.nome) return alert("Nome obrigatório");
+            
+            if(!dados.nome || !dados.matricula) return alert("Nome e Matrícula são obrigatórios!");
+
+            var endpoint = idEdit ? "/api/colaborador/editar" : "/api/colaborador/adicionar";
 
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/api/colaborador/adicionar", true);
+            xhr.open("POST", endpoint, true);
             xhr.setRequestHeader("Content-Type", "application/json");
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4 && xhr.status === 200) {
-                    alert("Colaborador Salvo!");
-                    document.getElementById("colab-nome").value = "";
-                    document.getElementById("colab-matricula").value = "";
+                    limparFormColab();
                     solicitarAtualizacaoDados();
                 }
             };
             xhr.send(JSON.stringify(dados));
         }
 
+        function editarColaborador(id) {
+            var c = listaGlobalColaboradores.find(function(x) { return x.id === id; });
+            if(!c) return;
+            
+            document.getElementById("colab-id").value = c.id;
+            document.getElementById("colab-nome").value = c.nome;
+            document.getElementById("colab-matricula").value = c.matricula;
+            document.getElementById("colab-entrada").value = c.entrada;
+            document.getElementById("colab-saida").value = c.saida;
+            document.getElementById("colab-escala").value = c.escala;
+            document.getElementById("titulo-form-colab").innerText = "EDITAR COLABORADOR";
+            window.scrollTo(0, 0);
+        }
+
+        function excluirColaborador(id) {
+            if(!confirm("Tem certeza que deseja EXCLUIR este colaborador?")) return;
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/colaborador/excluir", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) solicitarAtualizacaoDados();
+            };
+            xhr.send(JSON.stringify({id: id}));
+        }
+
+        /* ----- ATUALIZAÇÃO E RENDERIZAÇÃO ----- */
         function solicitarAtualizacaoDados() {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", "/api/dados", true);
@@ -237,7 +311,7 @@
                 var minEnt = parseInt(ent[0])*60 + parseInt(ent[1]);
                 var minSai = parseInt(sai[0])*60 + parseInt(sai[1]);
                 
-                if (minSai < minEnt) { // Vira a noite
+                if (minSai < minEnt) { 
                     return horaAtual >= minEnt || horaAtual <= minSai;
                 } else {
                     return horaAtual >= minEnt && horaAtual <= minSai;
@@ -249,7 +323,12 @@
             var div = document.getElementById("lista-colaboradores");
             div.innerHTML = "";
             colabs.forEach(function(c) {
-                div.innerHTML += "<div class='item-fila'><strong>" + c.nome + "</strong> (" + c.matricula + ") <br><small>" + c.entrada + " às " + c.saida + " - " + c.escala + "</small></div>";
+                div.innerHTML += 
+                "<div class='item-fila'><strong>" + c.nome + "</strong> (" + c.matricula + ") <br><small>" + c.entrada + " às " + c.saida + " - " + c.escala + "</small>" +
+                "<div style='margin-top:10px; display:flex; gap:10px;'>" +
+                    "<button class='btn-buscar' onclick='editarColaborador(" + c.id + ")'>EDITAR</button>" +
+                    "<button class='btn-excluir' onclick='excluirColaborador(" + c.id + ")'>EXCLUIR</button>" +
+                "</div></div>";
             });
         }
 
@@ -342,7 +421,7 @@
             document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
             
             if(aba === 'caixa') { document.getElementById('btn-caixa').classList.add('active'); document.getElementById('tela-caixa').classList.remove('hidden'); }
-            if(aba === 'colaboradores') { document.getElementById('btn-colab').classList.add('active'); document.getElementById('tela-colaboradores').classList.remove('hidden'); }
+            if(aba === 'colaboradores') { document.getElementById('tela-colaboradores').classList.remove('hidden'); solicitarAtualizacaoDados(); }
             if(aba === 'solicitacoes') { document.getElementById('btn-solicitacoes').classList.add('active'); document.getElementById('tela-solicitacoes').classList.remove('hidden'); solicitarAtualizacaoDados(); }
             if(aba === 'painel') { document.getElementById('btn-painel').classList.add('active'); document.getElementById('tela-painel').classList.remove('hidden'); solicitarAtualizacaoDados(); }
         }
