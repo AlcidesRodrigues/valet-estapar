@@ -7,8 +7,9 @@ import io
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # Bancos de dados temporários
-fila_veiculos = []
+fila_veiculos = [] # Agora terá status: "solicitado" ou "em_manobra"
 historico_veiculos = [] 
+colaboradores = [] # Novo banco de dados de funcionários
 
 # ========================================================
 # 🔒 CONFIGURAÇÃO DE ACESSOS (NÍVEIS DE USUÁRIO)
@@ -56,19 +57,11 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         self.send_response(401)
         self.send_header('WWW-Authenticate', 'Basic realm="Acesso Restrito"')
         self.end_headers()
-        self.wfile.write(b"Acesso Negado. Feche a aba ou digite a senha correta.")
+        self.wfile.write(b"Acesso Negado.")
         return False
 
-    def do_HEAD(self):
-        if self.path == '/api/ping':
-            self.send_response(200)
-            self.end_headers()
-            return
-        self.send_response(404)
-        self.end_headers()
-
     def do_GET(self):
-        global fila_veiculos, historico_veiculos
+        global fila_veiculos, historico_veiculos, colaboradores
         diretorio_atual = os.path.dirname(os.path.abspath(__file__))
         
         if self.path == '/api/ping':
@@ -89,9 +82,6 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"usuario": usuario}).encode('utf-8'))
             return
         
-        # ========================================================
-        # NOVA ROTA: GERADOR DE RELATÓRIO EXCEL (CSV)
-        # ========================================================
         if self.path == '/api/relatorio':
             self.send_response(200)
             self.send_header('Content-type', 'text/csv; charset=utf-8')
@@ -100,8 +90,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
 
             output = io.StringIO()
             writer = csv.writer(output, delimiter=';')
-            # Cabeçalho do Excel
-            writer.writerow(['Prisma', 'Placa', 'Modelo', 'Hora Solicitado', 'Hora Entregue (Baixa)', 'Tempo Total de Espera'])
+            writer.writerow(['Prisma', 'Placa', 'Modelo', 'Manobrista', 'Hora Solicitado', 'Hora Entregue (Baixa)', 'Tempo Total de Espera'])
 
             for c in historico_veiculos:
                 tempo_min = round(c.get("tempo_espera_ms", 0) / 60000)
@@ -109,6 +98,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
                     c.get("prisma", ""),
                     c.get("placa", ""),
                     c.get("modelo", ""),
+                    c.get("manobrista", "N/A"),
                     c.get("hora_solicitacao", ""),
                     c.get("hora_baixa", ""),
                     f"{tempo_min} min"
@@ -124,6 +114,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
             resposta = {
                 "fila": fila_veiculos,
                 "historico": historico_veiculos,
+                "colaboradores": colaboradores,
                 "tempo_medio": tempo_medio
             }
             self.send_response(200)
@@ -159,30 +150,35 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         if not self.verificar_autenticacao():
             return
 
-        global fila_veiculos, historico_veiculos
+        global fila_veiculos, historico_veiculos, colaboradores
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
         dados = json.loads(post_data.decode('utf-8'))
 
         if self.path == '/api/adicionar':
-            prisma_solicitado = str(dados.get("prisma", "")).strip()
-            
-            for carro in fila_veiculos:
-                if str(carro.get("prisma", "")).strip() == prisma_solicitado:
-                    self.send_response(400)
-                    self.end_headers()
-                    self.wfile.write(b"DUPLICADO")
-                    return
-
             novo_carro = {
                 "id": dados["id"],
                 "placa": str(dados.get("placa", "")).strip().upper(),
                 "modelo": str(dados.get("modelo", "")).strip().upper(),
-                "prisma": prisma_solicitado,
-                "hora_solicitacao": dados.get("hora_solicitacao", "")
+                "prisma": str(dados.get("prisma", "")).strip(),
+                "hora_solicitacao": dados.get("hora_solicitacao", ""),
+                "status": "solicitado",
+                "manobrista": ""
             }
             fila_veiculos.append(novo_carro)
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"OK")
             
+        elif self.path == '/api/atribuir':
+            carro_id = dados.get("id")
+            manobrista = dados.get("manobrista")
+            carro_alvo = next((c for c in fila_veiculos if c["id"] == carro_id), None)
+            
+            if carro_alvo:
+                carro_alvo["status"] = "em_manobra"
+                carro_alvo["manobrista"] = manobrista
+
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"OK")
@@ -197,12 +193,24 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
             if carro_alvo:
                 carro_alvo["hora_baixa"] = hora_baixa
                 carro_alvo["tempo_espera_ms"] = timestamp_baixa - carro_alvo["id"]
-                
-                # Agora o sistema guarda TUDO do dia, não apenas 20
+                carro_alvo["status"] = "entregue"
                 historico_veiculos.insert(0, carro_alvo)
-                
                 fila_veiculos = [c for c in fila_veiculos if c["id"] != carro_id]
 
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"OK")
+            
+        elif self.path == '/api/colaborador/adicionar':
+            novo_colab = {
+                "id": dados.get("id"),
+                "nome": dados.get("nome"),
+                "matricula": dados.get("matricula"),
+                "entrada": dados.get("entrada"),
+                "saida": dados.get("saida"),
+                "escala": dados.get("escala")
+            }
+            colaboradores.append(novo_colab)
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"OK")
@@ -211,7 +219,7 @@ def run():
     porta = int(os.environ.get('PORT', 8080))
     server_address = ('0.0.0.0', porta) 
     httpd = HTTPServer(server_address, ServidorFilaHandler)
-    print(f"SERVIDOR INICIADO COM SUCESSO NA PORTA {porta}")
+    print(f"SERVIDOR INICIADO NA PORTA {porta}")
     httpd.serve_forever()
 
 if __name__ == '__main__':
