@@ -43,6 +43,11 @@
         
         .botoes-acao { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
 
+        /* AREA DOS ATALHOS CUSTOMIZAVEIS */
+        .area-atalhos { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #444;}
+        .btn-atalho { background: #333; color: #ddd; border: 1px solid #555; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; flex-grow: 1; max-width: 180px; }
+        .btn-atalho:hover { background: var(--info); color: #fff; border-color: var(--info); }
+
         .grid-2-colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left;}
         .coluna-painel { background: #222; padding: 15px; border-radius: 10px; min-height: 300px;}
         .coluna-painel h3 { margin-top: 0; text-align: center; border-bottom: 2px solid #444; padding-bottom: 10px; }
@@ -85,7 +90,8 @@
     <div class="overlay" id="menu-overlay" onclick="toggleMenu()"></div>
     
     <div class="menu-lateral" id="menu-lateral">
-        <div id="menu-colab" class="menu-item hidden" onclick="abrirColaboradores()">👥 Colaboradores</div>
+        <div id="menu-colab" class="menu-item hidden" onclick="abrirConfig('colaboradores')">👥 Colaboradores</div>
+        <div id="menu-atalhos" class="menu-item hidden" onclick="abrirConfig('atalhos')">⚙️ Configurar Atalhos</div>
         <div id="menu-relatorio" class="menu-item hidden" onclick="baixarRelatorio()">📥 Baixar Relatório</div>
         <div class="menu-item" onclick="toggleFullScreen()">⛶ Tela Cheia</div>
         <div class="menu-item menu-danger" onclick="fazerLogout()">✖ Sair do Sistema</div>
@@ -112,6 +118,8 @@
             <button class="btn-limpar" onclick="limparFormulario()">LIMPAR</button> 
             <button class="btn-enviar" onclick="enviarPedido()">ENVIAR</button>
         </div>
+        
+        <div id="area-atalhos-caixa" class="area-atalhos"></div>
     </div>
 
     <div id="tela-colaboradores" class="container hidden">
@@ -128,9 +136,23 @@
             <button class="btn-limpar" onclick="limparFormColab()">CANCELAR</button>
             <button class="btn-enviar" onclick="salvarColaborador()">SALVAR</button>
         </div>
-        
         <h3 style="margin-top:30px;">Equipe Cadastrada</h3>
         <div id="lista-colaboradores" style="text-align:left;"></div>
+    </div>
+
+    <div id="tela-atalhos" class="container hidden">
+        <h2 id="titulo-form-atalho">CRIAR BOTÃO DE ATALHO</h2>
+        <p style="color:#aaa; font-size:0.9rem; margin-bottom:15px;">Estes botões aparecerão na tela do Caixa para preencher o Modelo do carro rapidamente.</p>
+        <div class="form-grupo">
+            <input type="hidden" id="atalho-id">
+            <input type="text" id="atalho-nome" placeholder="Nome do Atalho (Ex: COROLLA)">
+        </div>
+        <div class="botoes-acao">
+            <button class="btn-limpar" onclick="limparFormAtalho()">CANCELAR</button>
+            <button class="btn-enviar" onclick="salvarAtalho()">SALVAR BOTÃO</button>
+        </div>
+        <h3 style="margin-top:30px;">Botões Criados</h3>
+        <div id="lista-atalhos-config" style="text-align:left;"></div>
     </div>
 
     <div id="tela-solicitacoes" class="container container-largo hidden">
@@ -163,8 +185,9 @@
     <script>
         var perfilAtual = ""; 
         var listaGlobalColaboradores = [];
-        var listaGlobalFila = []; // Para validar duplicatas
-        var tempoMedioGlobal = 600000; // Padrão 10 min
+        var listaGlobalAtalhos = [];
+        var listaGlobalFila = []; 
+        var tempoMedioGlobal = 600000; 
 
         window.onload = function() {
             mudarPerfil('caixa'); 
@@ -176,9 +199,9 @@
             document.getElementById("menu-overlay").classList.toggle("ativo");
         }
 
-        function abrirColaboradores() {
+        function abrirConfig(tipo) {
             toggleMenu();
-            mudarPerfil('colaboradores');
+            mudarPerfil(tipo);
         }
 
         function baixarRelatorio() { 
@@ -204,6 +227,7 @@
                     if (u === "estapar") {
                         document.getElementById("menu-relatorio").classList.remove("hidden");
                         document.getElementById("menu-colab").classList.remove("hidden");
+                        document.getElementById("menu-atalhos").classList.remove("hidden");
                     }
                 }
             };
@@ -220,7 +244,6 @@
             var prisma = document.getElementById("input-prisma").value.trim();
             if (prisma === "") { alert("PRISMA obrigatório!"); return; }
 
-            // VALIDAÇÃO DE PRISMA DUPLICADO!
             var duplicado = listaGlobalFila.find(function(c) { return c.prisma === prisma; });
             if (duplicado) {
                 alert("⚠️ BLOQUEADO! O Prisma número " + prisma + " já foi solicitado e está na fila!");
@@ -245,6 +268,81 @@
                 }
             };
             xhr.send(JSON.stringify(dados));
+        }
+
+        /* ----- FUNÇÕES DE BOTÕES DE ATALHO ----- */
+        function limparFormAtalho() {
+            document.getElementById("atalho-id").value = "";
+            document.getElementById("atalho-nome").value = "";
+            document.getElementById("titulo-form-atalho").innerText = "CRIAR BOTÃO DE ATALHO";
+        }
+
+        function salvarAtalho() {
+            var idEdit = document.getElementById("atalho-id").value;
+            var dados = {
+                id: idEdit ? parseInt(idEdit) : Date.now(),
+                nome: document.getElementById("atalho-nome").value
+            };
+            
+            if(!dados.nome) return alert("O nome do atalho é obrigatório!");
+
+            var endpoint = idEdit ? "/api/atalho/editar" : "/api/atalho/adicionar";
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", endpoint, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    limparFormAtalho();
+                    solicitarAtualizacaoDados();
+                }
+            };
+            xhr.send(JSON.stringify(dados));
+        }
+
+        function editarAtalho(id) {
+            var a = listaGlobalAtalhos.find(function(x) { return x.id === id; });
+            if(!a) return;
+            document.getElementById("atalho-id").value = a.id;
+            document.getElementById("atalho-nome").value = a.nome;
+            document.getElementById("titulo-form-atalho").innerText = "EDITAR BOTÃO DE ATALHO";
+            window.scrollTo(0, 0);
+        }
+
+        function excluirAtalho(id) {
+            if(!confirm("Tem certeza que deseja EXCLUIR este atalho?")) return;
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/atalho/excluir", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) solicitarAtualizacaoDados();
+            };
+            xhr.send(JSON.stringify({id: id}));
+        }
+
+        function usarAtalho(nome) {
+            document.getElementById("input-modelo").value = nome;
+            document.getElementById("input-prisma").focus();
+        }
+
+        function renderizarAtalhos(atalhos) {
+            // Renderiza na tela de Configuração
+            var divConfig = document.getElementById("lista-atalhos-config");
+            divConfig.innerHTML = "";
+            atalhos.forEach(function(a) {
+                divConfig.innerHTML += 
+                "<div class='item-fila'><strong>" + a.nome + "</strong>" +
+                "<div style='margin-top:10px; display:flex; gap:10px;'>" +
+                    "<button class='btn-buscar' onclick='editarAtalho(" + a.id + ")'>EDITAR</button>" +
+                    "<button class='btn-excluir' onclick='excluirAtalho(" + a.id + ")'>EXCLUIR</button>" +
+                "</div></div>";
+            });
+
+            // Renderiza os botões clicáveis na tela do CAIXA
+            var divCaixa = document.getElementById("area-atalhos-caixa");
+            divCaixa.innerHTML = "";
+            atalhos.forEach(function(a) {
+                divCaixa.innerHTML += "<button class='btn-atalho' onclick='usarAtalho(\"" + a.nome + "\")'>" + a.nome + "</button>";
+            });
         }
 
         /* ----- FUNÇÕES DE COLABORADORES ----- */
@@ -272,7 +370,6 @@
             if(!dados.nome || !dados.matricula) return alert("Nome e Matrícula são obrigatórios!");
 
             var endpoint = idEdit ? "/api/colaborador/editar" : "/api/colaborador/adicionar";
-
             var xhr = new XMLHttpRequest();
             xhr.open("POST", endpoint, true);
             xhr.setRequestHeader("Content-Type", "application/json");
@@ -288,7 +385,6 @@
         function editarColaborador(id) {
             var c = listaGlobalColaboradores.find(function(x) { return x.id === id; });
             if(!c) return;
-            
             document.getElementById("colab-id").value = c.id;
             document.getElementById("colab-nome").value = c.nome;
             document.getElementById("colab-matricula").value = c.matricula;
@@ -310,7 +406,7 @@
             xhr.send(JSON.stringify({id: id}));
         }
 
-        /* ----- ATUALIZAÇÃO E RENDERIZAÇÃO ----- */
+        /* ----- ATUALIZAÇÃO GERAL E RENDERIZAÇÃO ----- */
         function solicitarAtualizacaoDados() {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", "/api/dados", true);
@@ -318,10 +414,13 @@
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     var dados = JSON.parse(xhr.responseText);
                     listaGlobalColaboradores = dados.colaboradores;
-                    listaGlobalFila = dados.fila; // Guarda fila atual para validar duplo
-                    tempoMedioGlobal = dados.tempo_medio; // Guarda o TMA para o cálculo do alerta
+                    listaGlobalAtalhos = dados.atalhos || [];
+                    listaGlobalFila = dados.fila; 
+                    tempoMedioGlobal = dados.tempo_medio; 
                     
                     if (perfilAtual === 'colaboradores') renderizarColab(dados.colaboradores);
+                    if (perfilAtual === 'atalhos') renderizarAtalhos(listaGlobalAtalhos);
+                    if (perfilAtual === 'caixa') renderizarAtalhos(listaGlobalAtalhos);
                     if (perfilAtual === 'solicitacoes') renderizarSolicitacoes(dados.fila);
                     if (perfilAtual === 'painel') renderizarPainel(dados);
                 }
@@ -374,8 +473,7 @@
             });
 
             fila.forEach(function(carro) {
-                // Lógica do Alerta de Tempo Estourado
-                var tempoEspera = Date.now() - carro.id; // Tempo desde que foi clicado em ENVIAR
+                var tempoEspera = Date.now() - carro.id; 
                 var isEstourado = (tempoMedioGlobal > 0 && tempoEspera > tempoMedioGlobal);
                 var classePulsante = isEstourado ? " alerta-estourado" : "";
                 var avisoAtraso = isEstourado ? "<br><span class='texto-alerta'>⚠️ TEMPO ESTOURADO!</span>" : "";
@@ -477,14 +575,19 @@
             document.querySelectorAll('.btn-aba').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
             
-            if(aba === 'caixa') { document.getElementById('btn-caixa').classList.add('active'); document.getElementById('tela-caixa').classList.remove('hidden'); }
+            if(aba === 'caixa') { 
+                document.getElementById('btn-caixa').classList.add('active'); 
+                document.getElementById('tela-caixa').classList.remove('hidden'); 
+                solicitarAtualizacaoDados();
+            }
             if(aba === 'colaboradores') { document.getElementById('tela-colaboradores').classList.remove('hidden'); solicitarAtualizacaoDados(); }
+            if(aba === 'atalhos') { document.getElementById('tela-atalhos').classList.remove('hidden'); solicitarAtualizacaoDados(); }
             if(aba === 'solicitacoes') { document.getElementById('btn-solicitacoes').classList.add('active'); document.getElementById('tela-solicitacoes').classList.remove('hidden'); solicitarAtualizacaoDados(); }
             if(aba === 'painel') { document.getElementById('btn-painel').classList.add('active'); document.getElementById('tela-painel').classList.remove('hidden'); solicitarAtualizacaoDados(); }
         }
 
         setInterval(function() {
-            if (perfilAtual !== 'caixa' && perfilAtual !== 'colaboradores') solicitarAtualizacaoDados();
+            if (perfilAtual !== 'caixa' && perfilAtual !== 'colaboradores' && perfilAtual !== 'atalhos') solicitarAtualizacaoDados();
         }, 10000);
     </script>
 </body>
