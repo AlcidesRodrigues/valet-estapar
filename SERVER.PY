@@ -12,9 +12,10 @@ ARQUIVO_DADOS = '/tmp/dados_valet.json'
 fila_veiculos = [] 
 historico_veiculos = [] 
 colaboradores = [] 
+atalhos = [] # Novo banco de dados para os botões
 
 def carregar_dados():
-    global fila_veiculos, historico_veiculos, colaboradores
+    global fila_veiculos, historico_veiculos, colaboradores, atalhos
     try:
         if os.path.exists(ARQUIVO_DADOS):
             with open(ARQUIVO_DADOS, 'r', encoding='utf-8') as f:
@@ -22,6 +23,7 @@ def carregar_dados():
                 fila_veiculos = dados.get("fila", [])
                 historico_veiculos = dados.get("historico", [])
                 colaboradores = dados.get("colaboradores", [])
+                atalhos = dados.get("atalhos", [])
     except:
         pass
 
@@ -31,7 +33,8 @@ def salvar_dados():
             json.dump({
                 "fila": fila_veiculos,
                 "historico": historico_veiculos,
-                "colaboradores": colaboradores
+                "colaboradores": colaboradores,
+                "atalhos": atalhos
             }, f)
     except:
         pass
@@ -86,7 +89,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         return False
 
     def do_GET(self):
-        global fila_veiculos, historico_veiculos, colaboradores
+        global fila_veiculos, historico_veiculos, colaboradores, atalhos
         diretorio_atual = os.path.dirname(os.path.abspath(__file__))
         
         if self.path == '/api/ping':
@@ -140,6 +143,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
                 "fila": fila_veiculos,
                 "historico": historico_veiculos,
                 "colaboradores": colaboradores,
+                "atalhos": atalhos,
                 "tempo_medio": tempo_medio
             }
             self.send_response(200)
@@ -175,7 +179,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         if not self.verificar_autenticacao():
             return
 
-        global fila_veiculos, historico_veiculos, colaboradores
+        global fila_veiculos, historico_veiculos, colaboradores, atalhos
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
         dados = json.loads(post_data.decode('utf-8'))
@@ -267,8 +271,39 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"OK")
 
+        # NOVAS ROTAS PARA ATALHOS
+        elif self.path == '/api/atalho/adicionar':
+            novo_atalho = {
+                "id": dados.get("id"),
+                "nome": str(dados.get("nome", "")).strip().upper()
+            }
+            atalhos.append(novo_atalho)
+            salvar_dados()
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"OK")
+            
+        elif self.path == '/api/atalho/editar':
+            atalho_id = int(dados.get("id"))
+            for a in atalhos:
+                if a["id"] == atalho_id:
+                    a["nome"] = str(dados.get("nome", "")).strip().upper()
+                    break
+            salvar_dados()
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"OK")
+            
+        elif self.path == '/api/atalho/excluir':
+            atalho_id = int(dados.get("id"))
+            atalhos = [a for a in atalhos if a["id"] != atalho_id]
+            salvar_dados()
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"OK")
+
 def run():
-    carregar_dados() # Carrega os dados salvos ao iniciar
+    carregar_dados() 
     porta = int(os.environ.get('PORT', 8080))
     server_address = ('0.0.0.0', porta) 
     httpd = HTTPServer(server_address, ServidorFilaHandler)
