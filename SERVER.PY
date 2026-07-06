@@ -7,12 +7,12 @@ import io
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # Bancos de dados temporários
-fila_veiculos = [] # Agora terá status: "solicitado" ou "em_manobra"
+fila_veiculos = [] 
 historico_veiculos = [] 
-colaboradores = [] # Novo banco de dados de funcionários
+colaboradores = [] 
 
 # ========================================================
-# 🔒 CONFIGURAÇÃO DE ACESSOS (NÍVEIS DE USUÁRIO)
+# 🔒 CONFIGURAÇÃO DE ACESSOS
 # ========================================================
 USUARIOS = {
     "estapar": "123",   
@@ -211,6 +211,27 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
                 "escala": dados.get("escala")
             }
             colaboradores.append(novo_colab)
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"OK")
+            
+        elif self.path == '/api/colaborador/editar':
+            colab_id = int(dados.get("id"))
+            for c in colaboradores:
+                if c["id"] == colab_id:
+                    c["nome"] = dados.get("nome")
+                    c["matricula"] = dados.get("matricula")
+                    c["entrada"] = dados.get("entrada")
+                    c["saida"] = dados.get("saida")
+                    c["escala"] = dados.get("escala")
+                    break
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"OK")
+            
+        elif self.path == '/api/colaborador/excluir':
+            colab_id = int(dados.get("id"))
+            colaboradores = [c for c in colaboradores if c["id"] != colab_id]
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"OK")
