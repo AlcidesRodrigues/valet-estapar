@@ -6,10 +6,35 @@ import csv
 import io
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+ARQUIVO_DADOS = '/tmp/dados_valet.json'
+
 # Bancos de dados temporários
 fila_veiculos = [] 
 historico_veiculos = [] 
 colaboradores = [] 
+
+def carregar_dados():
+    global fila_veiculos, historico_veiculos, colaboradores
+    try:
+        if os.path.exists(ARQUIVO_DADOS):
+            with open(ARQUIVO_DADOS, 'r', encoding='utf-8') as f:
+                dados = json.load(f)
+                fila_veiculos = dados.get("fila", [])
+                historico_veiculos = dados.get("historico", [])
+                colaboradores = dados.get("colaboradores", [])
+    except:
+        pass
+
+def salvar_dados():
+    try:
+        with open(ARQUIVO_DADOS, 'w', encoding='utf-8') as f:
+            json.dump({
+                "fila": fila_veiculos,
+                "historico": historico_veiculos,
+                "colaboradores": colaboradores
+            }, f)
+    except:
+        pass
 
 # ========================================================
 # 🔒 CONFIGURAÇÃO DE ACESSOS
@@ -166,6 +191,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
                 "manobrista": ""
             }
             fila_veiculos.append(novo_carro)
+            salvar_dados()
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"OK")
@@ -178,6 +204,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
             if carro_alvo:
                 carro_alvo["status"] = "em_manobra"
                 carro_alvo["manobrista"] = manobrista
+                salvar_dados()
 
             self.send_response(200)
             self.end_headers()
@@ -196,6 +223,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
                 carro_alvo["status"] = "entregue"
                 historico_veiculos.insert(0, carro_alvo)
                 fila_veiculos = [c for c in fila_veiculos if c["id"] != carro_id]
+                salvar_dados()
 
             self.send_response(200)
             self.end_headers()
@@ -211,6 +239,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
                 "escala": dados.get("escala")
             }
             colaboradores.append(novo_colab)
+            salvar_dados()
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"OK")
@@ -225,6 +254,7 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
                     c["saida"] = dados.get("saida")
                     c["escala"] = dados.get("escala")
                     break
+            salvar_dados()
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"OK")
@@ -232,11 +262,13 @@ class ServidorFilaHandler(BaseHTTPRequestHandler):
         elif self.path == '/api/colaborador/excluir':
             colab_id = int(dados.get("id"))
             colaboradores = [c for c in colaboradores if c["id"] != colab_id]
+            salvar_dados()
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b"OK")
 
 def run():
+    carregar_dados() # Carrega os dados salvos ao iniciar
     porta = int(os.environ.get('PORT', 8080))
     server_address = ('0.0.0.0', porta) 
     httpd = HTTPServer(server_address, ServidorFilaHandler)
