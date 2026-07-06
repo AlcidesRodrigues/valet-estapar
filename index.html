@@ -50,7 +50,6 @@
         .item-fila { background: #2a2a2a; padding: 15px; margin: 10px 0; border-radius: 10px; text-align: left; transition: 0.3s; position: relative;}
         .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 1.2rem;}
         
-        /* Nova formatação de dados mais espaçada */
         .item-dados { color: #ccc; font-size: 0.95rem; margin-bottom: 5px; line-height: 1.5; }
         .item-destaque { color: #fff; font-weight: bold; }
         
@@ -150,6 +149,12 @@
         var perfilAtual = ""; 
         var listaGlobalColaboradores = [];
 
+        // Inicialização Forçada: Mostra o caixa primeiro, checa acesso depois
+        window.onload = function() {
+            mudarPerfil('caixa'); 
+            configurarAcessos();  
+        };
+
         function toggleMenu() {
             document.getElementById("menu-lateral").classList.toggle("aberto");
             document.getElementById("menu-overlay").classList.toggle("ativo");
@@ -184,13 +189,10 @@
                         document.getElementById("menu-relatorio").classList.remove("hidden");
                         document.getElementById("menu-colab").classList.remove("hidden");
                     }
-                    mudarPerfil("caixa");
                 }
             };
             xhr.send();
         }
-
-        window.onload = configurarAcessos;
 
         function limparFormulario() {
             document.getElementById("input-placa").value = "";
@@ -244,4 +246,210 @@
                 escala: document.getElementById("colab-escala").value
             };
             
-            if(!dados.nome || !dados.matricula) return alert
+            if(!dados.nome || !dados.matricula) return alert("Nome e Matrícula são obrigatórios!");
+
+            var endpoint = idEdit ? "/api/colaborador/editar" : "/api/colaborador/adicionar";
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", endpoint, true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    limparFormColab();
+                    solicitarAtualizacaoDados();
+                }
+            };
+            xhr.send(JSON.stringify(dados));
+        }
+
+        function editarColaborador(id) {
+            var c = listaGlobalColaboradores.find(function(x) { return x.id === id; });
+            if(!c) return;
+            
+            document.getElementById("colab-id").value = c.id;
+            document.getElementById("colab-nome").value = c.nome;
+            document.getElementById("colab-matricula").value = c.matricula;
+            document.getElementById("colab-entrada").value = c.entrada;
+            document.getElementById("colab-saida").value = c.saida;
+            document.getElementById("colab-escala").value = c.escala;
+            document.getElementById("titulo-form-colab").innerText = "EDITAR COLABORADOR";
+            window.scrollTo(0, 0);
+        }
+
+        function excluirColaborador(id) {
+            if(!confirm("Tem certeza que deseja EXCLUIR este colaborador?")) return;
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/colaborador/excluir", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) solicitarAtualizacaoDados();
+            };
+            xhr.send(JSON.stringify({id: id}));
+        }
+
+        /* ----- ATUALIZAÇÃO E RENDERIZAÇÃO ----- */
+        function solicitarAtualizacaoDados() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/api/dados", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var dados = JSON.parse(xhr.responseText);
+                    listaGlobalColaboradores = dados.colaboradores;
+                    
+                    if (perfilAtual === 'colaboradores') renderizarColab(dados.colaboradores);
+                    if (perfilAtual === 'solicitacoes') renderizarSolicitacoes(dados.fila);
+                    if (perfilAtual === 'painel') renderizarPainel(dados);
+                }
+            };
+            xhr.send();
+        }
+
+        function obterColaboradoresDisponiveis() {
+            var agora = new Date();
+            var horaAtual = agora.getHours() * 60 + agora.getMinutes();
+            
+            return listaGlobalColaboradores.filter(function(c) {
+                if(!c.entrada || !c.saida) return true; 
+                var ent = c.entrada.split(":");
+                var sai = c.saida.split(":");
+                var minEnt = parseInt(ent[0])*60 + parseInt(ent[1]);
+                var minSai = parseInt(sai[0])*60 + parseInt(sai[1]);
+                
+                if (minSai < minEnt) { 
+                    return horaAtual >= minEnt || horaAtual <= minSai;
+                } else {
+                    return horaAtual >= minEnt && horaAtual <= minSai;
+                }
+            });
+        }
+
+        function renderizarColab(colabs) {
+            var div = document.getElementById("lista-colaboradores");
+            div.innerHTML = "";
+            colabs.forEach(function(c) {
+                div.innerHTML += 
+                "<div class='item-fila'><strong>" + c.nome + "</strong> (" + c.matricula + ") <br><small>" + c.entrada + " às " + c.saida + " - " + c.escala + "</small>" +
+                "<div style='margin-top:10px; display:flex; gap:10px;'>" +
+                    "<button class='btn-buscar' onclick='editarColaborador(" + c.id + ")'>EDITAR</button>" +
+                    "<button class='btn-excluir' onclick='excluirColaborador(" + c.id + ")'>EXCLUIR</button>" +
+                "</div></div>";
+            });
+        }
+
+        /* TELA DE SOLICITAÇÕES */
+        function renderizarSolicitacoes(fila) {
+            var col1 = document.getElementById("solicitacoes-col-1");
+            var col2 = document.getElementById("solicitacoes-col-2");
+            col1.innerHTML = ""; col2.innerHTML = "";
+
+            var disponiveis = obterColaboradoresDisponiveis();
+            var optionsHTML = "<option value=''>Selecione o Manobrista...</option>";
+            disponiveis.forEach(function(c) {
+                optionsHTML += "<option value='" + c.nome + "'>" + c.matricula + " - " + c.nome + "</option>";
+            });
+
+            fila.forEach(function(carro) {
+                var info = "<strong>Prisma: " + carro.prisma + "</strong><br>" +
+                           "<div class='item-dados'>" + 
+                               "Modelo: <span class='item-destaque'>" + carro.modelo + "</span> | " +
+                               "Placa: <span class='item-destaque'>" + carro.placa + "</span><br>" +
+                               "Solicitado: " + carro.hora_solicitacao + 
+                           "</div>";
+                
+                if(carro.status === "solicitado") {
+                    var dropID = "drop-" + carro.id;
+                    col1.innerHTML += 
+                        "<div class='item-fila'>" + info + 
+                        "<div style='margin-top:10px;'><button class='btn-buscar' onclick='mostrarDropdown(" + carro.id + ")'>BUSCAR</button></div>" +
+                        "<div id='" + dropID + "' class='seletor-manobrista hidden'>" +
+                            "<select id='sel-" + carro.id + "'>" + optionsHTML + "</select>" +
+                            "<button class='btn-enviar' onclick='atribuirManobrista(" + carro.id + ")'>OK</button>" +
+                        "</div></div>";
+                } else {
+                    col2.innerHTML += 
+                        "<div class='item-fila borda-amarela'>" + info + 
+                        "<span class='manobrista-nome'>Resp: " + carro.manobrista + "</span>" +
+                        "<div style='margin-top:10px; text-align:right;'><button class='btn-baixa' onclick='darBaixa(" + carro.id + ")'>BAIXA</button></div></div>";
+                }
+            });
+        }
+
+        function mostrarDropdown(id) {
+            document.getElementById("drop-" + id).classList.remove("hidden");
+        }
+
+        function atribuirManobrista(id) {
+            var sel = document.getElementById("sel-" + id).value;
+            var payload = { id: id, manobrista: sel || "Não Informado" };
+            
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/atribuir", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() { if (xhr.readyState === 4) solicitarAtualizacaoDados(); };
+            xhr.send(JSON.stringify(payload));
+        }
+
+        function darBaixa(id) {
+            var dados = { id: id, timestamp_baixa: Date.now(), hora_baixa: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) };
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/baixa", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() { if (xhr.readyState === 4) solicitarAtualizacaoDados(); };
+            xhr.send(JSON.stringify(dados));
+        }
+
+        /* TELA DO PAINEL */
+        function renderizarPainel(dados) {
+            document.getElementById("display-tma").innerText = Math.round(dados.tempo_medio / 60000) + " min";
+            var col1 = document.getElementById("painel-col-1");
+            var col2 = document.getElementById("painel-col-2");
+            col1.innerHTML = ""; col2.innerHTML = "";
+
+            dados.fila.forEach(function(carro) {
+                var cssClasse = carro.status === "em_manobra" ? "borda-amarela" : "";
+                var manoHtml = carro.status === "em_manobra" ? "<span class='manobrista-nome'>Resp: " + carro.manobrista + "</span>" : "";
+                
+                col1.innerHTML += 
+                    "<div class='item-fila " + cssClasse + "'>" +
+                        "<strong>Prisma: " + carro.prisma + "</strong><br>" +
+                        "<div class='item-dados'>" + 
+                            "Modelo: <span class='item-destaque'>" + carro.modelo + "</span> | " +
+                            "Placa: <span class='item-destaque'>" + carro.placa + "</span><br>" +
+                            "Solicitado: " + carro.hora_solicitacao + 
+                        "</div>" + manoHtml +
+                    "</div>";
+            });
+
+            var histTela = dados.historico.slice(0, 20);
+            histTela.forEach(function(carro) {
+                col2.innerHTML += 
+                    "<div class='item-fila' style='border-left: 5px solid var(--primary);'>" +
+                        "<strong>Prisma: " + carro.prisma + "</strong><br>" +
+                        "<div class='item-dados'>" + 
+                            "Modelo: <span class='item-destaque'>" + carro.modelo + "</span> | " +
+                            "Placa: <span class='item-destaque'>" + carro.placa + "</span><br>" +
+                            "Solicitado: " + carro.hora_solicitacao + "<br>" +
+                            "Resp: " + (carro.manobrista||"N/A") + "<br>" +
+                            "Entregue às: <span class='item-destaque'>" + carro.hora_baixa + "</span>" +
+                        "</div>" +
+                    "</div>";
+            });
+        }
+
+        function mudarPerfil(aba) {
+            perfilAtual = aba;
+            document.querySelectorAll('.btn-aba').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+            
+            if(aba === 'caixa') { document.getElementById('btn-caixa').classList.add('active'); document.getElementById('tela-caixa').classList.remove('hidden'); }
+            if(aba === 'colaboradores') { document.getElementById('tela-colaboradores').classList.remove('hidden'); solicitarAtualizacaoDados(); }
+            if(aba === 'solicitacoes') { document.getElementById('btn-solicitacoes').classList.add('active'); document.getElementById('tela-solicitacoes').classList.remove('hidden'); solicitarAtualizacaoDados(); }
+            if(aba === 'painel') { document.getElementById('btn-painel').classList.add('active'); document.getElementById('tela-painel').classList.remove('hidden'); solicitarAtualizacaoDados(); }
+        }
+
+        setInterval(function() {
+            if (perfilAtual !== 'caixa' && perfilAtual !== 'colaboradores') solicitarAtualizacaoDados();
+        }, 10000);
+    </script>
+</body>
+</html>
