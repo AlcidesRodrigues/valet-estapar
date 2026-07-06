@@ -56,6 +56,21 @@
         .borda-amarela { border-left: 6px solid var(--warning); }
         .manobrista-nome { color: var(--warning); font-weight: bold; font-size: 1rem; display: block; margin-top: 5px;}
 
+        /* ANIMAÇÃO TEMPO ESTOURADO (PULSAR VERMELHO) */
+        @keyframes pulsarAlerta {
+            0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+            70% { box-shadow: 0 0 15px 10px rgba(244, 67, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+        }
+        .alerta-estourado {
+            border: 2px solid var(--danger) !important;
+            animation: pulsarAlerta 1.5s infinite;
+        }
+        .texto-alerta {
+            color: var(--danger) !important;
+            font-weight: bold;
+        }
+
         .hidden { display: none !important; }
         
         .seletor-manobrista { display: flex; gap: 5px; margin-top: 10px;}
@@ -148,8 +163,9 @@
     <script>
         var perfilAtual = ""; 
         var listaGlobalColaboradores = [];
+        var listaGlobalFila = []; // Para validar duplicatas
+        var tempoMedioGlobal = 600000; // Padrão 10 min
 
-        // Inicialização Forçada: Mostra o caixa primeiro, checa acesso depois
         window.onload = function() {
             mudarPerfil('caixa'); 
             configurarAcessos();  
@@ -203,6 +219,13 @@
         function enviarPedido() {
             var prisma = document.getElementById("input-prisma").value.trim();
             if (prisma === "") { alert("PRISMA obrigatório!"); return; }
+
+            // VALIDAÇÃO DE PRISMA DUPLICADO!
+            var duplicado = listaGlobalFila.find(function(c) { return c.prisma === prisma; });
+            if (duplicado) {
+                alert("⚠️ BLOQUEADO! O Prisma número " + prisma + " já foi solicitado e está na fila!");
+                return;
+            }
 
             var dados = {
                 id: Date.now(), 
@@ -295,6 +318,8 @@
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     var dados = JSON.parse(xhr.responseText);
                     listaGlobalColaboradores = dados.colaboradores;
+                    listaGlobalFila = dados.fila; // Guarda fila atual para validar duplo
+                    tempoMedioGlobal = dados.tempo_medio; // Guarda o TMA para o cálculo do alerta
                     
                     if (perfilAtual === 'colaboradores') renderizarColab(dados.colaboradores);
                     if (perfilAtual === 'solicitacoes') renderizarSolicitacoes(dados.fila);
@@ -349,17 +374,23 @@
             });
 
             fila.forEach(function(carro) {
+                // Lógica do Alerta de Tempo Estourado
+                var tempoEspera = Date.now() - carro.id; // Tempo desde que foi clicado em ENVIAR
+                var isEstourado = (tempoMedioGlobal > 0 && tempoEspera > tempoMedioGlobal);
+                var classePulsante = isEstourado ? " alerta-estourado" : "";
+                var avisoAtraso = isEstourado ? "<br><span class='texto-alerta'>⚠️ TEMPO ESTOURADO!</span>" : "";
+
                 var info = "<strong>Prisma: " + carro.prisma + "</strong><br>" +
                            "<div class='item-dados'>" + 
                                "Modelo: <span class='item-destaque'>" + carro.modelo + "</span> | " +
                                "Placa: <span class='item-destaque'>" + carro.placa + "</span><br>" +
-                               "Solicitado: " + carro.hora_solicitacao + 
+                               "Solicitado: " + carro.hora_solicitacao + avisoAtraso +
                            "</div>";
                 
                 if(carro.status === "solicitado") {
                     var dropID = "drop-" + carro.id;
                     col1.innerHTML += 
-                        "<div class='item-fila'>" + info + 
+                        "<div class='item-fila" + classePulsante + "'>" + info + 
                         "<div style='margin-top:10px;'><button class='btn-buscar' onclick='mostrarDropdown(" + carro.id + ")'>BUSCAR</button></div>" +
                         "<div id='" + dropID + "' class='seletor-manobrista hidden'>" +
                             "<select id='sel-" + carro.id + "'>" + optionsHTML + "</select>" +
@@ -367,7 +398,7 @@
                         "</div></div>";
                 } else {
                     col2.innerHTML += 
-                        "<div class='item-fila borda-amarela'>" + info + 
+                        "<div class='item-fila borda-amarela" + classePulsante + "'>" + info + 
                         "<span class='manobrista-nome'>Resp: " + carro.manobrista + "</span>" +
                         "<div style='margin-top:10px; text-align:right;'><button class='btn-baixa' onclick='darBaixa(" + carro.id + ")'>BAIXA</button></div></div>";
                 }
@@ -406,16 +437,21 @@
             col1.innerHTML = ""; col2.innerHTML = "";
 
             dados.fila.forEach(function(carro) {
+                var tempoEspera = Date.now() - carro.id;
+                var isEstourado = (tempoMedioGlobal > 0 && tempoEspera > tempoMedioGlobal);
+                var classePulsante = isEstourado ? " alerta-estourado" : "";
+                var avisoAtraso = isEstourado ? "<br><span class='texto-alerta'>⚠️ VEÍCULO ATRASADO</span>" : "";
+
                 var cssClasse = carro.status === "em_manobra" ? "borda-amarela" : "";
                 var manoHtml = carro.status === "em_manobra" ? "<span class='manobrista-nome'>Resp: " + carro.manobrista + "</span>" : "";
                 
                 col1.innerHTML += 
-                    "<div class='item-fila " + cssClasse + "'>" +
+                    "<div class='item-fila " + cssClasse + classePulsante + "'>" +
                         "<strong>Prisma: " + carro.prisma + "</strong><br>" +
                         "<div class='item-dados'>" + 
                             "Modelo: <span class='item-destaque'>" + carro.modelo + "</span> | " +
                             "Placa: <span class='item-destaque'>" + carro.placa + "</span><br>" +
-                            "Solicitado: " + carro.hora_solicitacao + 
+                            "Solicitado: " + carro.hora_solicitacao + avisoAtraso +
                         "</div>" + manoHtml +
                     "</div>";
             });
