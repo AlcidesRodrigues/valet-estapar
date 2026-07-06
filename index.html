@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gerenciador de Fila - Valet</title>
+    <link rel="icon" type="image/png" href="ESTAPAR-16.png">
     
     <style>
         :root { --bg-color: #121212; --card-bg: #1e1e1e; --primary: #4CAF50; --danger: #f44336; --info: #2196F3; --warning: #ff9800; --text: #ffffff; }
@@ -22,6 +23,7 @@
         .menu-danger:hover { color: #fff; background: var(--danger); }
 
         .container-logo { display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 25px; margin-top: 20px; }
+        .container-logo img { max-height: 55px; object-fit: contain; }
         
         /* ABAS CENTRAIS */
         .view-toggle { margin-bottom: 20px; display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 900px;}
@@ -98,7 +100,7 @@
     </div>
 
     <div class="container-logo">
-        <h1 style="color: var(--primary); margin:0;">ESTAPAR VALET</h1>
+        <img src="ESTAPAR-04.png" alt="Estapar Valet">
     </div>
 
     <div class="view-toggle">
@@ -142,10 +144,10 @@
 
     <div id="tela-atalhos" class="container hidden">
         <h2 id="titulo-form-atalho">CRIAR BOTÃO DE ATALHO</h2>
-        <p style="color:#aaa; font-size:0.9rem; margin-bottom:15px;">Estes botões aparecerão na tela do Caixa para preencher o Modelo do carro rapidamente.</p>
+        <p style="color:#aaa; font-size:0.9rem; margin-bottom:15px;">Estes botões aparecerão na tela do Caixa para complementar o número do Prisma rapidamente (Ex: 45 PS, 45 PRIORIDADE).</p>
         <div class="form-grupo">
             <input type="hidden" id="atalho-id">
-            <input type="text" id="atalho-nome" placeholder="Nome do Atalho (Ex: COROLLA)">
+            <input type="text" id="atalho-nome" placeholder="Nome do Atalho (Ex: PS)">
         </div>
         <div class="botoes-acao">
             <button class="btn-limpar" onclick="limparFormAtalho()">CANCELAR</button>
@@ -319,13 +321,19 @@
             xhr.send(JSON.stringify({id: id}));
         }
 
+        /* CORREÇÃO AQUI: COMPLEMENTA O CAMPO PRISMA JUNTANDO OS VALORES */
         function usarAtalho(nome) {
-            document.getElementById("input-modelo").value = nome;
-            document.getElementById("input-prisma").focus();
+            var inputPrisma = document.getElementById("input-prisma");
+            var valorAtual = inputPrisma.value.trim();
+            if (valorAtual) {
+                inputPrisma.value = valorAtual + " " + nome;
+            } else {
+                inputPrisma.value = nome;
+            }
+            inputPrisma.focus();
         }
 
         function renderizarAtalhos(atalhos) {
-            // Renderiza na tela de Configuração
             var divConfig = document.getElementById("lista-atalhos-config");
             divConfig.innerHTML = "";
             atalhos.forEach(function(a) {
@@ -337,7 +345,6 @@
                 "</div></div>";
             });
 
-            // Renderiza os botões clicáveis na tela do CAIXA
             var divCaixa = document.getElementById("area-atalhos-caixa");
             divCaixa.innerHTML = "";
             atalhos.forEach(function(a) {
