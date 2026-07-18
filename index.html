@@ -1,3 +1,6 @@
+
+
+Index · HTML
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -21,7 +24,7 @@
         .menu-item:hover { background: #333; color: var(--primary); }
         .menu-danger { color: var(--danger); margin-top: auto; border-top: 1px solid #333; border-bottom: none; }
         .menu-danger:hover { color: #fff; background: var(--danger); }
-
+ 
         .container-logo { display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 25px; margin-top: 20px; }
         .container-logo img { max-height: 55px; object-fit: contain; }
         
@@ -32,10 +35,10 @@
         
         .container { width: 100%; max-width: 600px; background: var(--card-bg); padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); text-align: center; margin-bottom: 20px; box-sizing: border-box; }
         .container-largo { max-width: 1000px; }
-
+ 
         .form-grupo { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
         .form-grupo input, .form-grupo select { padding: 15px; font-size: 1.2rem; border-radius: 10px; border: 1px solid #444; background: #000; color: var(--primary); text-align: center; font-weight: bold; }
-
+ 
         button { padding: 15px; font-size: 1.1rem; font-weight: bold; border: none; border-radius: 10px; cursor: pointer; color: white; transition: 0.2s; }
         .btn-enviar { background: var(--primary); }
         .btn-limpar { background: var(--danger); }
@@ -44,16 +47,16 @@
         .btn-excluir { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 8px 15px; }
         
         .botoes-acao { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-
+ 
         /* AREA DOS ATALHOS CUSTOMIZAVEIS */
         .area-atalhos { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #444;}
         .btn-atalho { background: #333; color: #ddd; border: 1px solid #555; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; flex-grow: 1; max-width: 180px; }
         .btn-atalho:hover { background: var(--info); color: #fff; border-color: var(--info); }
-
+ 
         .grid-2-colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left;}
         .coluna-painel { background: #222; padding: 15px; border-radius: 10px; min-height: 300px;}
         .coluna-painel h3 { margin-top: 0; text-align: center; border-bottom: 2px solid #444; padding-bottom: 10px; }
-
+ 
         .item-fila { background: #2a2a2a; padding: 15px; margin: 10px 0; border-radius: 10px; text-align: left; transition: 0.3s; position: relative;}
         .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 1.2rem;}
         
@@ -62,7 +65,7 @@
         
         .borda-amarela { border-left: 6px solid var(--warning); }
         .manobrista-nome { color: var(--warning); font-weight: bold; font-size: 1rem; display: block; margin-top: 5px;}
-
+ 
         /* ANIMAÇÃO TEMPO ESTOURADO (PULSAR VERMELHO) */
         @keyframes pulsarAlerta {
             0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
@@ -77,38 +80,43 @@
             color: var(--danger) !important;
             font-weight: bold;
         }
-
+ 
         .hidden { display: none !important; }
         
         .seletor-manobrista { display: flex; gap: 5px; margin-top: 10px;}
         .seletor-manobrista select { flex: 1; padding: 5px; background: #000; color: #fff; border: 1px solid #555; }
+ 
+        .item-log { background: #2a2a2a; padding: 12px 15px; margin: 8px 0; border-radius: 8px; text-align: left; border-left: 4px solid var(--info); font-size: 0.95rem; }
+        .item-log .log-acao { color: #fff; font-weight: bold; }
+        .item-log .log-meta { color: #999; font-size: 0.85rem; margin-top: 4px; }
         
         @media (max-width: 768px) { .grid-2-colunas { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-
+ 
     <button class="btn-menu" onclick="toggleMenu()">☰</button>
     <div class="overlay" id="menu-overlay" onclick="toggleMenu()"></div>
     
     <div class="menu-lateral" id="menu-lateral">
         <div id="menu-colab" class="menu-item hidden" onclick="abrirConfig('colaboradores')">👥 Colaboradores</div>
         <div id="menu-atalhos" class="menu-item hidden" onclick="abrirConfig('atalhos')">⚙️ Configurar Atalhos</div>
+        <div id="menu-logs" class="menu-item hidden" onclick="abrirConfig('logs')">🕓 Log de Acessos</div>
         <div id="menu-relatorio" class="menu-item hidden" onclick="baixarRelatorio()">📥 Baixar Relatório</div>
         <div class="menu-item" onclick="toggleFullScreen()">⛶ Tela Cheia</div>
         <div class="menu-item menu-danger" onclick="fazerLogout()">✖ Sair do Sistema</div>
     </div>
-
+ 
     <div class="container-logo">
         <img src="ESTAPAR-04.png" alt="Estapar Valet">
     </div>
-
+ 
     <div class="view-toggle">
         <button id="btn-caixa" class="btn-aba" onclick="mudarPerfil('caixa')">CAIXA</button>
         <button id="btn-solicitacoes" class="btn-aba" onclick="mudarPerfil('solicitacoes')">SOLICITAÇÕES</button>
         <button id="btn-painel" class="btn-aba" onclick="mudarPerfil('painel')">PAINEL</button>
     </div>
-
+ 
     <div id="tela-caixa" class="container hidden">
         <h2>SOLICITAR VEÍCULO</h2>
         <div class="form-grupo">
@@ -123,7 +131,7 @@
         
         <div id="area-atalhos-caixa" class="area-atalhos"></div>
     </div>
-
+ 
     <div id="tela-colaboradores" class="container hidden">
         <h2 id="titulo-form-colab">ADICIONAR COLABORADOR</h2>
         <div class="form-grupo">
@@ -141,7 +149,7 @@
         <h3 style="margin-top:30px;">Equipe Cadastrada</h3>
         <div id="lista-colaboradores" style="text-align:left;"></div>
     </div>
-
+ 
     <div id="tela-atalhos" class="container hidden">
         <h2 id="titulo-form-atalho">CRIAR BOTÃO DE ATALHO</h2>
         <p style="color:#aaa; font-size:0.9rem; margin-bottom:15px;">Estes botões aparecerão na tela do Caixa para complementar o número do Prisma rapidamente (Ex: 45 PS, 45 PRIORIDADE).</p>
@@ -156,7 +164,13 @@
         <h3 style="margin-top:30px;">Botões Criados</h3>
         <div id="lista-atalhos-config" style="text-align:left;"></div>
     </div>
-
+ 
+    <div id="tela-logs" class="container container-largo hidden">
+        <h2>🕓 LOG DE ACESSOS E AÇÕES</h2>
+        <p style="color:#aaa; font-size:0.9rem;">Histórico das últimas ações registradas no sistema (login e operações). Visível apenas para o usuário administrador.</p>
+        <div id="lista-logs" style="text-align:left; margin-top:15px;"></div>
+    </div>
+ 
     <div id="tela-solicitacoes" class="container container-largo hidden">
         <div class="grid-2-colunas">
             <div class="coluna-painel">
@@ -169,7 +183,7 @@
             </div>
         </div>
     </div>
-
+ 
     <div id="tela-painel" class="container container-largo hidden">
         <h3 style="color: var(--info);">TEMPO MÉDIO (TMA): <span id="display-tma">Calculando...</span></h3>
         <div class="grid-2-colunas">
@@ -183,42 +197,43 @@
             </div>
         </div>
     </div>
-
+ 
     <script>
         var perfilAtual = ""; 
         var listaGlobalColaboradores = [];
         var listaGlobalAtalhos = [];
         var listaGlobalFila = []; 
         var tempoMedioGlobal = 600000; 
-
+        var usuarioLogado = "";
+ 
         window.onload = function() {
             mudarPerfil('caixa'); 
             configurarAcessos();  
         };
-
+ 
         function toggleMenu() {
             document.getElementById("menu-lateral").classList.toggle("aberto");
             document.getElementById("menu-overlay").classList.toggle("ativo");
         }
-
+ 
         function abrirConfig(tipo) {
             toggleMenu();
             mudarPerfil(tipo);
         }
-
+ 
         function baixarRelatorio() { 
             toggleMenu();
             window.location.href = "/api/relatorio"; 
         }
-
+ 
         function fazerLogout() { window.location.href = window.location.protocol + "//sair:sair@" + window.location.host; }
-
+ 
         function toggleFullScreen() {
             if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); } 
             else if (document.exitFullscreen) { document.exitFullscreen(); }
             toggleMenu();
         }
-
+ 
         function configurarAcessos() {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", "/api/perfil", true);
@@ -226,32 +241,34 @@
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     var res = JSON.parse(xhr.responseText);
                     var u = res.usuario ? res.usuario.toLowerCase() : "";
+                    usuarioLogado = u;
                     if (u === "estapar") {
                         document.getElementById("menu-relatorio").classList.remove("hidden");
                         document.getElementById("menu-colab").classList.remove("hidden");
                         document.getElementById("menu-atalhos").classList.remove("hidden");
+                        document.getElementById("menu-logs").classList.remove("hidden");
                     }
                 }
             };
             xhr.send();
         }
-
+ 
         function limparFormulario() {
             document.getElementById("input-placa").value = "";
             document.getElementById("input-modelo").value = "";
             document.getElementById("input-prisma").value = "";
         }
-
+ 
         function enviarPedido() {
             var prisma = document.getElementById("input-prisma").value.trim();
             if (prisma === "") { alert("PRISMA obrigatório!"); return; }
-
+ 
             var duplicado = listaGlobalFila.find(function(c) { return c.prisma === prisma; });
             if (duplicado) {
                 alert("⚠️ BLOQUEADO! O Prisma número " + prisma + " já foi solicitado e está na fila!");
                 return;
             }
-
+ 
             var dados = {
                 id: Date.now(), 
                 placa: document.getElementById("input-placa").value,
@@ -271,14 +288,14 @@
             };
             xhr.send(JSON.stringify(dados));
         }
-
+ 
         /* ----- FUNÇÕES DE BOTÕES DE ATALHO ----- */
         function limparFormAtalho() {
             document.getElementById("atalho-id").value = "";
             document.getElementById("atalho-nome").value = "";
             document.getElementById("titulo-form-atalho").innerText = "CRIAR BOTÃO DE ATALHO";
         }
-
+ 
         function salvarAtalho() {
             var idEdit = document.getElementById("atalho-id").value;
             var dados = {
@@ -287,7 +304,7 @@
             };
             
             if(!dados.nome) return alert("O nome do atalho é obrigatório!");
-
+ 
             var endpoint = idEdit ? "/api/atalho/editar" : "/api/atalho/adicionar";
             var xhr = new XMLHttpRequest();
             xhr.open("POST", endpoint, true);
@@ -300,7 +317,7 @@
             };
             xhr.send(JSON.stringify(dados));
         }
-
+ 
         function editarAtalho(id) {
             var a = listaGlobalAtalhos.find(function(x) { return x.id === id; });
             if(!a) return;
@@ -309,7 +326,7 @@
             document.getElementById("titulo-form-atalho").innerText = "EDITAR BOTÃO DE ATALHO";
             window.scrollTo(0, 0);
         }
-
+ 
         function excluirAtalho(id) {
             if(!confirm("Tem certeza que deseja EXCLUIR este atalho?")) return;
             var xhr = new XMLHttpRequest();
@@ -320,8 +337,7 @@
             };
             xhr.send(JSON.stringify({id: id}));
         }
-
-        /* CORREÇÃO AQUI: COMPLEMENTA O CAMPO PRISMA JUNTANDO OS VALORES */
+ 
         function usarAtalho(nome) {
             var inputPrisma = document.getElementById("input-prisma");
             var valorAtual = inputPrisma.value.trim();
@@ -332,7 +348,7 @@
             }
             inputPrisma.focus();
         }
-
+ 
         function renderizarAtalhos(atalhos) {
             var divConfig = document.getElementById("lista-atalhos-config");
             divConfig.innerHTML = "";
@@ -344,14 +360,14 @@
                     "<button class='btn-excluir' onclick='excluirAtalho(" + a.id + ")'>EXCLUIR</button>" +
                 "</div></div>";
             });
-
+ 
             var divCaixa = document.getElementById("area-atalhos-caixa");
             divCaixa.innerHTML = "";
             atalhos.forEach(function(a) {
                 divCaixa.innerHTML += "<button class='btn-atalho' onclick='usarAtalho(\"" + a.nome + "\")'>" + a.nome + "</button>";
             });
         }
-
+ 
         /* ----- FUNÇÕES DE COLABORADORES ----- */
         function limparFormColab() {
             document.getElementById("colab-id").value = "";
@@ -362,7 +378,7 @@
             document.getElementById("colab-escala").value = "";
             document.getElementById("titulo-form-colab").innerText = "ADICIONAR COLABORADOR";
         }
-
+ 
         function salvarColaborador() {
             var idEdit = document.getElementById("colab-id").value;
             var dados = {
@@ -375,7 +391,7 @@
             };
             
             if(!dados.nome || !dados.matricula) return alert("Nome e Matrícula são obrigatórios!");
-
+ 
             var endpoint = idEdit ? "/api/colaborador/editar" : "/api/colaborador/adicionar";
             var xhr = new XMLHttpRequest();
             xhr.open("POST", endpoint, true);
@@ -388,7 +404,7 @@
             };
             xhr.send(JSON.stringify(dados));
         }
-
+ 
         function editarColaborador(id) {
             var c = listaGlobalColaboradores.find(function(x) { return x.id === id; });
             if(!c) return;
@@ -401,7 +417,7 @@
             document.getElementById("titulo-form-colab").innerText = "EDITAR COLABORADOR";
             window.scrollTo(0, 0);
         }
-
+ 
         function excluirColaborador(id) {
             if(!confirm("Tem certeza que deseja EXCLUIR este colaborador?")) return;
             var xhr = new XMLHttpRequest();
@@ -412,7 +428,35 @@
             };
             xhr.send(JSON.stringify({id: id}));
         }
-
+ 
+        /* ----- LOG DE ACESSOS ----- */
+        function carregarLogs() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "/api/logs", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    renderizarLogs(JSON.parse(xhr.responseText));
+                }
+            };
+            xhr.send();
+        }
+ 
+        function renderizarLogs(logs) {
+            var div = document.getElementById("lista-logs");
+            if (!logs || logs.length === 0) {
+                div.innerHTML = "<p style='color:#888;'>Nenhum registro ainda.</p>";
+                return;
+            }
+            div.innerHTML = "";
+            logs.forEach(function(l) {
+                div.innerHTML +=
+                    "<div class='item-log'>" +
+                        "<span class='log-acao'>" + l.acao + "</span>" +
+                        "<div class='log-meta'>Usuário: " + l.usuario + " • " + l.data_hora + "</div>" +
+                    "</div>";
+            });
+        }
+ 
         /* ----- ATUALIZAÇÃO GERAL E RENDERIZAÇÃO ----- */
         function solicitarAtualizacaoDados() {
             var xhr = new XMLHttpRequest();
@@ -434,7 +478,7 @@
             };
             xhr.send();
         }
-
+ 
         function obterColaboradoresDisponiveis() {
             var agora = new Date();
             var horaAtual = agora.getHours() * 60 + agora.getMinutes();
@@ -453,7 +497,7 @@
                 }
             });
         }
-
+ 
         function renderizarColab(colabs) {
             var div = document.getElementById("lista-colaboradores");
             div.innerHTML = "";
@@ -466,25 +510,25 @@
                 "</div></div>";
             });
         }
-
+ 
         /* TELA DE SOLICITAÇÕES */
         function renderizarSolicitacoes(fila) {
             var col1 = document.getElementById("solicitacoes-col-1");
             var col2 = document.getElementById("solicitacoes-col-2");
             col1.innerHTML = ""; col2.innerHTML = "";
-
+ 
             var disponiveis = obterColaboradoresDisponiveis();
             var optionsHTML = "<option value=''>Selecione o Manobrista...</option>";
             disponiveis.forEach(function(c) {
                 optionsHTML += "<option value='" + c.nome + "'>" + c.matricula + " - " + c.nome + "</option>";
             });
-
+ 
             fila.forEach(function(carro) {
                 var tempoEspera = Date.now() - carro.id; 
                 var isEstourado = (tempoMedioGlobal > 0 && tempoEspera > tempoMedioGlobal);
                 var classePulsante = isEstourado ? " alerta-estourado" : "";
                 var avisoAtraso = isEstourado ? "<br><span class='texto-alerta'>⚠️ TEMPO ESTOURADO!</span>" : "";
-
+ 
                 var info = "<strong>Prisma: " + carro.prisma + "</strong><br>" +
                            "<div class='item-dados'>" + 
                                "Modelo: <span class='item-destaque'>" + carro.modelo + "</span> | " +
@@ -509,11 +553,11 @@
                 }
             });
         }
-
+ 
         function mostrarDropdown(id) {
             document.getElementById("drop-" + id).classList.remove("hidden");
         }
-
+ 
         function atribuirManobrista(id) {
             var sel = document.getElementById("sel-" + id).value;
             var payload = { id: id, manobrista: sel || "Não Informado" };
@@ -524,7 +568,7 @@
             xhr.onreadystatechange = function() { if (xhr.readyState === 4) solicitarAtualizacaoDados(); };
             xhr.send(JSON.stringify(payload));
         }
-
+ 
         function darBaixa(id) {
             var dados = { id: id, timestamp_baixa: Date.now(), hora_baixa: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) };
             var xhr = new XMLHttpRequest();
@@ -533,20 +577,20 @@
             xhr.onreadystatechange = function() { if (xhr.readyState === 4) solicitarAtualizacaoDados(); };
             xhr.send(JSON.stringify(dados));
         }
-
+ 
         /* TELA DO PAINEL */
         function renderizarPainel(dados) {
             document.getElementById("display-tma").innerText = Math.round(dados.tempo_medio / 60000) + " min";
             var col1 = document.getElementById("painel-col-1");
             var col2 = document.getElementById("painel-col-2");
             col1.innerHTML = ""; col2.innerHTML = "";
-
+ 
             dados.fila.forEach(function(carro) {
                 var tempoEspera = Date.now() - carro.id;
                 var isEstourado = (tempoMedioGlobal > 0 && tempoEspera > tempoMedioGlobal);
                 var classePulsante = isEstourado ? " alerta-estourado" : "";
                 var avisoAtraso = isEstourado ? "<br><span class='texto-alerta'>⚠️ VEÍCULO ATRASADO</span>" : "";
-
+ 
                 var cssClasse = carro.status === "em_manobra" ? "borda-amarela" : "";
                 var manoHtml = carro.status === "em_manobra" ? "<span class='manobrista-nome'>Resp: " + carro.manobrista + "</span>" : "";
                 
@@ -560,7 +604,7 @@
                         "</div>" + manoHtml +
                     "</div>";
             });
-
+ 
             var histTela = dados.historico.slice(0, 20);
             histTela.forEach(function(carro) {
                 col2.innerHTML += 
@@ -576,7 +620,7 @@
                     "</div>";
             });
         }
-
+ 
         function mudarPerfil(aba) {
             perfilAtual = aba;
             document.querySelectorAll('.btn-aba').forEach(btn => btn.classList.remove('active'));
@@ -589,13 +633,15 @@
             }
             if(aba === 'colaboradores') { document.getElementById('tela-colaboradores').classList.remove('hidden'); solicitarAtualizacaoDados(); }
             if(aba === 'atalhos') { document.getElementById('tela-atalhos').classList.remove('hidden'); solicitarAtualizacaoDados(); }
+            if(aba === 'logs') { document.getElementById('tela-logs').classList.remove('hidden'); carregarLogs(); }
             if(aba === 'solicitacoes') { document.getElementById('btn-solicitacoes').classList.add('active'); document.getElementById('tela-solicitacoes').classList.remove('hidden'); solicitarAtualizacaoDados(); }
             if(aba === 'painel') { document.getElementById('btn-painel').classList.add('active'); document.getElementById('tela-painel').classList.remove('hidden'); solicitarAtualizacaoDados(); }
         }
-
+ 
         setInterval(function() {
-            if (perfilAtual !== 'caixa' && perfilAtual !== 'colaboradores' && perfilAtual !== 'atalhos') solicitarAtualizacaoDados();
+            if (perfilAtual !== 'caixa' && perfilAtual !== 'colaboradores' && perfilAtual !== 'atalhos' && perfilAtual !== 'logs') solicitarAtualizacaoDados();
         }, 10000);
     </script>
 </body>
 </html>
+ 
