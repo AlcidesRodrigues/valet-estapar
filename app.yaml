@@ -2,4 +2,18 @@ runtime: python311
 instance_class: F1
 automatic_scaling:
   max_instances: 1
+  # Opcional: se quiser eliminar completamente o "cold start" (o app
+  # demora alguns segundos para responder depois de ficar ocioso),
+  # descomente a linha abaixo. Isso mantém 1 instância sempre ligada,
+  # mas gera custo continuo (a instancia F1 fica rodando 24h).
+  # Como os dados agora são persistidos no Cloud Storage, isso NÃO é
+  # mais necessário para evitar perda de dados — é só uma questão de
+  # velocidade de resposta.
+  # min_instances: 1
 entrypoint: python SERVER.PY
+
+env_variables:
+  # Opcional: só preencha se quiser usar um bucket diferente do padrão
+  # do App Engine (NOME-DO-PROJETO.appspot.com, que já existe e já
+  # tem permissão automática). Deixe em branco para usar o padrão.
+  BUCKET_DADOS: ""
